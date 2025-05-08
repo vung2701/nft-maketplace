@@ -1,26 +1,16 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { Button, Layout } from "antd";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const { Header, Content, Footer } = Layout;
+
+const App: React.FC = () => (
+  <Layout>
+    <Header style={{ color: "white" }}>NFT Marketplace</Header>
+    <Content style={{ padding: "50px" }}>
+      <Button type="primary">Mint NFT</Button>
+    </Content>
+    <Footer style={{ textAlign: "center" }}>©2025 Created by You</Footer>
+  </Layout>
+);
 
 export default App;
