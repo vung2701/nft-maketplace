@@ -1,8 +1,8 @@
-import { MintForm } from '../components/MintForm.tsx';
 import { NFTItem } from '../types';
 import { NFTCard } from '../components/NFTCard';
 import { Row, Col } from 'antd';
 import { useState } from 'react';
+import { MintForm } from '../components/MinForm';
 
 export const Home: React.FC = () => {
   const [nfts, setNfts] = useState<NFTItem[]>([]);

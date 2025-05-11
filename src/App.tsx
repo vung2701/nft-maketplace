@@ -1,16 +1,33 @@
-import React from "react";
-import { Button, Layout } from "antd";
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { Layout, Menu } from 'antd';
+import { Home } from './pages/Home';
+import { Marketplace } from './pages/MarketPlace';
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 
-const App: React.FC = () => (
-  <Layout>
-    <Header style={{ color: "white" }}>NFT Marketplace</Header>
-    <Content style={{ padding: "50px" }}>
-      <Button type="primary">Mint NFT</Button>
-    </Content>
-    <Footer style={{ textAlign: "center" }}>©2025 Created by You</Footer>
-  </Layout>
-);
+function App() {
+  return (
+    <Router>
+      <Layout>
+        <Header>
+          <Menu theme="dark" mode="horizontal">
+            <Menu.Item key="home">
+              <Link to="/">Home</Link>
+            </Menu.Item>
+            <Menu.Item key="marketplace">
+              <Link to="/marketplace">Marketplace</Link>
+            </Menu.Item>
+          </Menu>
+        </Header>
+        <Content style={{ padding: '40px' }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+          </Routes>
+        </Content>
+      </Layout>
+    </Router>
+  );
+}
 
 export default App;
