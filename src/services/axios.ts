@@ -52,13 +52,13 @@ const uploadAxios = (token?: string | null): AxiosInstance => {
   return axiosInstance;
 };
 
-const pinataAxios = (token?: string | null): AxiosInstance => {
-  const headers: Record<string, string> = {
-    'Content-type': 'multipart/form-data',
-  };
-
-  axiosInstance = _createAxios(PINATA_URL, token, headers);
-  return axiosInstance;
+const pinataAxios = (): AxiosInstance => {
+  return axios.create({
+    baseURL: PINATA_URL,
+    headers: {
+      Authorization: `Bearer ${import.meta.env.VITE_PINATA_JWT}`,
+    },
+  });
 };
 
 

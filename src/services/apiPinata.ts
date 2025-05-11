@@ -2,37 +2,35 @@ import {  pinataAxios } from './axios';
 
 const axiosInstance = pinataAxios();
   
-const uploadFileToIPFS = (file: File) => {
+const uploadFileToIPFS =  async (file: File) => {
 	try {
-
 		const formData = new FormData();
 		formData.append("file", file);
 	
-		const res = axiosInstance.post("pinning/pinFileToIPFS", {
-		  headers: {
-			Authorization: `Bearer ${import.meta.env.VITE_PINATA_JWT}`,
-		  },
-		  body: formData,
-		});
-		return `ipfs://${res?.IpfsHash}`;
-	} catch (error) {
-		console.log(error)
-	}
+		const res = await axiosInstance.post("/pinning/pinFileToIPFS", formData);
+		return `ipfs://${res.data.IpfsHash}`;
+	  } catch (error) {
+		console.error("Upload file failed:", error);
+		return null;
+	  }
   }
   
-const uploadMetadataToIPFS = (metadata: object) => {
+const uploadMetadataToIPFS = async (metadata: object) => {
 	try {
-		const res = axiosInstance.post("pinning/pinJSONToIPFS", {
-		  headers: {
-			Authorization: `Bearer ${import.meta.env.VITE_PINATA_JWT}`,
-			"Content-Type": "application/json",
-		  },
-		  body: JSON.stringify(metadata),
-		});
-		return `ipfs://${res.IpfsHash}`;
-	} catch (error) {
-		console.log(error)
-	}
+		const res = await axiosInstance.post(
+		  "/pinning/pinJSONToIPFS",
+		  metadata,
+		  {
+			headers: {
+			  "Content-Type": "application/json", // bắt buộc cho JSON
+			},
+		  }
+		);
+		return `ipfs://${res.data.IpfsHash}`;
+	  } catch (error) {
+		console.error("Upload metadata failed:", error);
+		return null;
+	  }
   }
   
   export {

@@ -14,7 +14,7 @@ export const Home: React.FC = () => {
   const { address, isConnected } = useAccount();
 
   const { data: balance } = useReadContract({
-    address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+    address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS,
     abi: NFTCollection,
     functionName: 'balanceOf',
     args: [address],
@@ -31,14 +31,14 @@ export const Home: React.FC = () => {
 
       for (let i = 0; i < Number(balance); i++) {
         const { data: tokenId } = await useReadContract({
-          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS,
           abi: NFTCollection,
           functionName: 'tokenOfOwnerByIndex',
           args: [address, i]
         });
 
         const { data: tokenURI } = await useReadContract({
-          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS,
           abi: NFTCollection,
           functionName: 'tokenURI',
           args: [tokenId]

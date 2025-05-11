@@ -1,19 +1,20 @@
 import { Button, Form, Input, Upload, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useState } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { uploadFileToIPFS, uploadMetadataToIPFS } from '../services/apiPinata';
+import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
 import NFTCollection from '../abis/NFTCollection.json';
 import MarketPlace from '../abis/Marketplace.json';
-import { uploadFileToIPFS, uploadMetadataToIPFS } from '../services/apiPinata';
 
 export const MintForm = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const handleFinish = async (values: any) => {
-    if (!isConnected) return message.error('Vui lòng kết nối ví!');
+    if (!isConnected || !address) return message.error('Vui lòng kết nối ví!');
     if (!file) return message.error('Vui lòng upload ảnh!');
 
     try {
@@ -36,21 +37,52 @@ export const MintForm = () => {
 
       // 4. Gọi mintNFT trên smart contract
       message.loading('Đang gọi mintNFT trên smart contract...');
-      const mintTx = await writeContractAsync({
+      const mintTxHash = await writeContractAsync({
         address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
         abi: NFTCollection,
         functionName: 'mintNFT',
         args: [address, tokenURI]
       });
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Chờ giao dịch được xử lý
+
+      // Chờ giao dịch hoàn tất và lấy tokenId
+      message.loading('Đang chờ xác nhận giao dịch...');
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: mintTxHash });
+
+      // Kiểm tra trạng thái giao dịch
+      if (receipt.status !== 'success') {
+        console.error('Transaction receipt:', receipt);
+        throw new Error(`Giao dịch mintNFT thất bại: ${receipt.status}`);
+      }
+
+      // Debug: Ghi log giao dịch
+      console.log('Transaction receipt:', receipt);
+      console.log('Transaction logs:', receipt.logs);
+
+      // Lấy tokenId từ giá trị trả về của mintNFT
+      const mintFunctionAbi = NFTCollection.find((item: any) => item.name === 'mintNFT' && item.type === 'function');
+      const log = receipt.logs.find((log) =>
+        log.topics.includes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')
+      );
+      let tokenId;
+      if (log) {
+        tokenId = BigInt(log.topics[3]).toString();
+      } else {
+        // Fallback: Giả sử mintNFT trả về tokenId trực tiếp
+        const decodedResult = await publicClient.readContract({
+          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+          abi: NFTCollection,
+          functionName: 'tokenCounter'
+        });
+        tokenId = (Number(decodedResult) - 1).toString();
+        if (!tokenId || tokenId < 0) {
+          throw new Error('Không thể xác định tokenId từ giao dịch');
+        }
+      }
 
       message.success('Mint NFT thành công 🎉');
 
       // 5. Liệt kê NFT trên Marketplace
       message.loading('Đang liệt kê NFT trên marketplace...');
-      // Lấy tokenId từ sự kiện (giả định tokenCounter tăng dần)
-      const tokenId = await fetchLatestTokenId();
-
       // Approve Marketplace
       await writeContractAsync({
         address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
@@ -70,21 +102,11 @@ export const MintForm = () => {
 
       message.success('NFT đã được liệt kê trên marketplace 🎉');
     } catch (err: any) {
-      console.error(err);
+      console.error('Lỗi:', err);
       message.error(`Thao tác thất bại: ${err.message || err}`);
     } finally {
       setLoading(false);
     }
-  };
-
-  // Hàm phụ để lấy tokenId mới nhất (giả định tokenCounter là public)
-  const fetchLatestTokenId = async (): Promise<bigint> => {
-    const { data } = await writeContractAsync({
-      address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
-      abi: NFTCollection,
-      functionName: 'tokenCounter'
-    });
-    return BigInt(data) - BigInt(1); // tokenCounter tăng sau khi mint
   };
 
   return (
