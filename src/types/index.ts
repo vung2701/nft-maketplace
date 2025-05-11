@@ -4,6 +4,6 @@ export interface NFTItem {
   description: string;
   image: string;
   owner: string;
+  isListed: boolean;
   price?: string;
-  isListed?: boolean;
 }

@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react';
 import { NFTItem } from '../types';
 import { Row, Col, message } from 'antd';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, usePublicClient, useReadContract } from 'wagmi';
 import NFTCollection from '../abis/NFTCollection.json';
 import axios from 'axios';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { MintForm } from '../components/MintForm';
 import { NFTCard } from '../components/NFTCard';
 
+const convertIpfsToHttp = (ipfsUrl: string) => {
+  if (ipfsUrl.startsWith('ipfs://')) {
+    return ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+  }
+  return ipfsUrl;
+};
+
 export const Home: React.FC = () => {
   const [nfts, setNfts] = useState<NFTItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { address, isConnected } = useAccount();
+  const publicClient = usePublicClient();
 
   const { data: balance } = useReadContract({
-    address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS,
+    address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
     abi: NFTCollection,
     functionName: 'balanceOf',
     args: [address],
@@ -29,37 +37,73 @@ export const Home: React.FC = () => {
       setLoading(true);
       const nftItems: NFTItem[] = [];
 
-      for (let i = 0; i < Number(balance); i++) {
-        const { data: tokenId } = await useReadContract({
-          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS,
-          abi: NFTCollection,
-          functionName: 'tokenOfOwnerByIndex',
-          args: [address, i]
-        });
+      // Get the current token counter (total minted NFTs)
+      const tokenCounter = await publicClient.readContract({
+        address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+        abi: NFTCollection,
+        functionName: 'tokenCounter',
+        args: []
+      });
 
-        const { data: tokenURI } = await useReadContract({
-          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS,
-          abi: NFTCollection,
-          functionName: 'tokenURI',
-          args: [tokenId]
-        });
+      let foundNFTs = 0;
+      const totalTokens = Number(tokenCounter);
 
-        const response = await axios.get(tokenURI as string);
-        const metadata = response.data;
+      // Check each token ID from 0 to tokenCounter-1
+      for (let tokenId = 0; tokenId < totalTokens && foundNFTs < Number(balance); tokenId++) {
+        try {
+          // Check if the connected address is the owner of this token
+          const tokenOwner = await publicClient.readContract({
+            address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+            abi: NFTCollection,
+            functionName: 'ownerOf',
+            args: [BigInt(tokenId)]
+          });
 
-        nftItems.push({
-          tokenId: Number(tokenId),
-          name: metadata.name,
-          description: metadata.description,
-          image: metadata.image,
-          owner: address,
-          isListed: false
-        });
+          // If this token belongs to the current user
+          if (tokenOwner.toLowerCase() === address.toLowerCase()) {
+            foundNFTs++;
+
+            // Get token URI
+            const tokenURI = await publicClient.readContract({
+              address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+              abi: NFTCollection,
+              functionName: 'tokenURI',
+              args: [BigInt(tokenId)]
+            });
+
+            // Convert IPFS URI to HTTP
+            const httpTokenURI = convertIpfsToHttp(tokenURI as string);
+
+            // Fetch metadata
+            const response = await axios.get(httpTokenURI);
+            const metadata = response.data;
+
+            const imageUrl = convertIpfsToHttp(metadata.image);
+
+            nftItems.push({
+              tokenId: tokenId,
+              name: metadata.name,
+              description: metadata.description,
+              image: imageUrl,
+              owner: address,
+              isListed: false
+            });
+          }
+        } catch (error) {
+          // Skip invalid token IDs (might be burned tokens)
+          console.log(`Skipping token ID ${tokenId}:`, error);
+        }
+
+        // If we've found all the user's NFTs, we can break the loop
+        if (foundNFTs >= Number(balance)) {
+          break;
+        }
       }
 
       setNfts(nftItems);
+      console.log('nft Items:', nftItems);
     } catch (err: any) {
-      console.error(err);
+      console.error('Lỗi khi tải NFT:', err);
       message.error(`Lỗi khi tải NFT: ${err.message || err}`);
     } finally {
       setLoading(false);

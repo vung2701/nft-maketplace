@@ -6,12 +6,17 @@ import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
 import NFTCollection from '../abis/NFTCollection.json';
 import MarketPlace from '../abis/Marketplace.json';
 
-export const MintForm = () => {
+interface MintFormProps {
+  onSuccess?: () => void; // Add callback for successful minting
+}
+
+export const MintForm = ({ onSuccess }: MintFormProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const [form] = Form.useForm(); // Get form instance to reset it after submission
 
   const handleFinish = async (values: any) => {
     if (!isConnected || !address) return message.error('Vui lòng kết nối ví!');
@@ -59,48 +64,56 @@ export const MintForm = () => {
       console.log('Transaction logs:', receipt.logs);
 
       // Lấy tokenId từ giá trị trả về của mintNFT
-      const mintFunctionAbi = NFTCollection.find((item: any) => item.name === 'mintNFT' && item.type === 'function');
-      const log = receipt.logs.find((log) =>
-        log.topics.includes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')
+      const transferEvent = receipt.logs.find(
+        (log) => log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' // Transfer event
       );
       let tokenId;
-      if (log) {
-        tokenId = BigInt(log.topics[3]).toString();
+      if (transferEvent) {
+        tokenId = BigInt(transferEvent.topics[3]).toString();
+        console.log('Minted NFT token ID:', tokenId);
       } else {
-        // Fallback: Giả sử mintNFT trả về tokenId trực tiếp
-        const decodedResult = await publicClient.readContract({
-          address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
-          abi: NFTCollection,
-          functionName: 'tokenCounter'
-        });
-        tokenId = (Number(decodedResult) - 1).toString();
-        if (!tokenId || tokenId < 0) {
-          throw new Error('Không thể xác định tokenId từ giao dịch');
-        }
+        throw new Error('Không tìm thấy sự kiện Transfer. Vui lòng kiểm tra contract.');
       }
 
       message.success('Mint NFT thành công 🎉');
 
       // 5. Liệt kê NFT trên Marketplace
       message.loading('Đang liệt kê NFT trên marketplace...');
+
       // Approve Marketplace
-      await writeContractAsync({
+      const approveTxHash = await writeContractAsync({
         address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
         abi: NFTCollection,
         functionName: 'approve',
         args: [import.meta.env.VITE_MARKETPLACE_ADDRESS, tokenId]
       });
 
+      // Wait for approval transaction
+      await publicClient.waitForTransactionReceipt({ hash: approveTxHash });
+
       // Liệt kê NFT với giá 0.01 ETH
       const price = BigInt(0.01 * 10 ** 18);
-      await writeContractAsync({
+      const listTxHash = await writeContractAsync({
         address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
         abi: MarketPlace,
         functionName: 'listNFT',
         args: [import.meta.env.VITE_NFT_CONTRACT_ADDRESS, tokenId, price]
       });
 
+      // Wait for listing transaction
+      await publicClient.waitForTransactionReceipt({ hash: listTxHash });
+
       message.success('NFT đã được liệt kê trên marketplace 🎉');
+
+      // Reset form after successful submission
+      form.resetFields();
+      setFile(null);
+
+      // Call onSuccess callback to refresh NFT list
+      if (onSuccess) {
+        console.log('Mint successful, triggering refresh');
+        onSuccess();
+      }
     } catch (err: any) {
       console.error('Lỗi:', err);
       message.error(`Thao tác thất bại: ${err.message || err}`);
@@ -110,7 +123,7 @@ export const MintForm = () => {
   };
 
   return (
-    <Form layout="vertical" onFinish={handleFinish}>
+    <Form form={form} layout="vertical" onFinish={handleFinish}>
       <Form.Item label="Tên NFT" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên NFT' }]}>
         <Input />
       </Form.Item>
@@ -124,6 +137,8 @@ export const MintForm = () => {
             return false;
           }}
           maxCount={1}
+          fileList={file ? ([file] as any) : []}
+          onRemove={() => setFile(null)}
         >
           <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
         </Upload>

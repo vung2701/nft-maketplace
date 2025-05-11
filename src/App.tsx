@@ -10,14 +10,20 @@ function App() {
     <Router>
       <Layout>
         <Header>
-          <Menu theme="dark" mode="horizontal">
-            <Menu.Item key="home">
-              <Link to="/">Home</Link>
-            </Menu.Item>
-            <Menu.Item key="marketplace">
-              <Link to="/marketplace">Marketplace</Link>
-            </Menu.Item>
-          </Menu>
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            items={[
+              {
+                key: 'home',
+                label: <Link to="/">Home</Link>
+              },
+              {
+                key: 'marketplace',
+                label: <Link to="/marketplace">Marketplace</Link>
+              }
+            ]}
+          />
         </Header>
         <Content style={{ padding: '40px' }}>
           <Routes>

@@ -16,7 +16,7 @@ export const Marketplace: React.FC = () => {
 
   const { data: listings, refetch: refetchListings } = useReadContract({
     address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
-    abi: Marketplace,
+    abi: MarketPlace,
     functionName: 'getListings',
     query: { enabled: isConnected }
   });
@@ -31,7 +31,7 @@ export const Marketplace: React.FC = () => {
 
       for (const listing of listings as any[]) {
         if (!listing.isSold) {
-          const { data: tokenURI } = await useReadContract({
+          const tokenURI = await publicClient.readContract({
             address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
             abi: NFTCollection,
             functionName: 'tokenURI',
@@ -55,7 +55,7 @@ export const Marketplace: React.FC = () => {
 
       setNfts(nftItems);
     } catch (err: any) {
-      console.error(err);
+      console.error('Lỗi khi tải NFT:', err);
       message.error(`Lỗi khi tải NFT: ${err.message || err}`);
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export const Marketplace: React.FC = () => {
       message.success('Mua NFT thành công 🎉');
       await refetchListings(); // Cập nhật danh sách NFT
     } catch (err: any) {
-      console.error(err);
+      console.error('Lỗi khi mua NFT:', err);
       message.error(`Mua NFT thất bại: ${err.message || err}`);
     } finally {
       setLoading(false);
