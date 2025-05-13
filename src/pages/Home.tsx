@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NFTItem } from '../types';
-import { Row, Col, message } from 'antd';
+import { Row, Col, message, Divider, Spin } from 'antd';
 import { useAccount, usePublicClient, useReadContract } from 'wagmi';
 import NFTCollection from '../abis/NFTCollection.json';
 import axios from 'axios';
@@ -117,20 +117,30 @@ export const Home: React.FC = () => {
   }, [isConnected, balance]);
 
   return (
-    <>
-      <h2>Mint NFT</h2>
-      <ConnectButton />
-      <MintForm />
-      <h2 style={{ marginTop: 40 }}>NFT của bạn</h2>
-      {loading && <p>Đang tải...</p>}
-      {!isConnected && <p>Vui lòng kết nối ví để xem NFT.</p>}
-      <Row gutter={[16, 16]}>
-        {nfts.map((nft) => (
-          <Col key={nft.tokenId} xs={24} sm={12} md={8} lg={6}>
-            <NFTCard nft={nft} />
-          </Col>
-        ))}
-      </Row>
-    </>
+    <div className="homePage">
+      <h2>Trang chủ</h2>
+      <div className="connectButton">
+        <h3>Kết nối ví:</h3>
+        <ConnectButton />
+      </div>
+      <div className="topContent">
+        <MintForm />
+      </div>
+      {loading && <Spin />}
+      {nfts.length > 0 && (
+        <div className="bottomContent">
+          <Divider variant="dashed" style={{ borderColor: '#bbb', marginBottom: 30, fontSize: 22 }}>
+            NFT của bạn
+          </Divider>
+          <Row gutter={[16, 16]}>
+            {nfts.map((nft) => (
+              <Col key={nft.tokenId} xs={24} sm={12} md={8} lg={6}>
+                <NFTCard nft={nft} />
+              </Col>
+            ))}
+          </Row>
+        </div>
+      )}
+    </div>
   );
 };

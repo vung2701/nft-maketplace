@@ -1,4 +1,4 @@
-import { Button, Form, Input, Upload, message } from 'antd';
+import { Button, Divider, Form, Input, Upload, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { uploadFileToIPFS, uploadMetadataToIPFS } from '../services/apiPinata';
@@ -7,7 +7,7 @@ import NFTCollection from '../abis/NFTCollection.json';
 import MarketPlace from '../abis/Marketplace.json';
 
 interface MintFormProps {
-  onSuccess?: () => void; // Add callback for successful minting
+  onSuccess?: () => void; // Callback for successful minting
 }
 
 export const MintForm = ({ onSuccess }: MintFormProps) => {
@@ -16,7 +16,7 @@ export const MintForm = ({ onSuccess }: MintFormProps) => {
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
-  const [form] = Form.useForm(); // Get form instance to reset it after submission
+  const [form] = Form.useForm();
 
   const handleFinish = async (values: any) => {
     if (!isConnected || !address) return message.error('Vui lòng kết nối ví!');
@@ -124,7 +124,7 @@ export const MintForm = ({ onSuccess }: MintFormProps) => {
 
   return (
     <Form form={form} layout="vertical" onFinish={handleFinish}>
-      <Form.Item label="Tên NFT" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên NFT' }]}>
+      <Form.Item label="Tên NFT:" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên NFT' }]}>
         <Input />
       </Form.Item>
       <Form.Item label="Mô tả" name="description" rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}>

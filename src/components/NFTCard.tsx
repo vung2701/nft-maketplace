@@ -1,13 +1,25 @@
-import { Card, Button, Typography } from 'antd';
+import { Card, Button, Typography, Input } from 'antd';
 import { NFTItem } from '../types';
+import { useState } from 'react';
 
 interface Props {
   nft: NFTItem;
   onBuy?: () => void;
-  onList?: () => void;
+  onList?: (price: string) => void;
 }
 
 export const NFTCard = ({ nft, onBuy, onList }: Props) => {
+  const [listPrice, setListPrice] = useState('');
+
+  const handleList = () => {
+    if (!listPrice || isNaN(Number(listPrice)) || Number(listPrice) <= 0) {
+      alert('Vui lòng nhập giá hợp lệ (số lớn hơn 0)!');
+      return;
+    }
+    if (onList) {
+      onList(listPrice);
+    }
+  };
   return (
     <Card
       hoverable
@@ -18,7 +30,7 @@ export const NFTCard = ({ nft, onBuy, onList }: Props) => {
           style={{
             objectFit: 'cover',
             width: '100%',
-            height: '200px' // Điều chỉnh kích thước hình ảnh
+            height: '230px'
           }}
         />
       }
@@ -35,25 +47,43 @@ export const NFTCard = ({ nft, onBuy, onList }: Props) => {
           </Typography.Title>
         }
         description={
-          <Typography.Paragraph ellipsis={{ rows: 2, expandable: true }}>{nft.description}</Typography.Paragraph>
+          <Typography.Paragraph ellipsis={{ rows: 1, expandable: true }}>{nft.description}</Typography.Paragraph>
         }
       />
       <div style={{ marginTop: 10 }}>
-        <p style={{ fontSize: '14px', color: '#555' }}>Owner: {nft.owner}</p>
+        <p
+          style={{
+            fontSize: '14px',
+            color: '#555',
+            wordBreak: 'break-word', // cho phép ngắt từ giữa nếu cần
+            whiteSpace: 'normal', // cho phép xuống dòng
+            maxWidth: '100%'
+          }}
+        >
+          <b>Owner:</b> {nft.owner}
+        </p>
         {nft.isListed && (
           <p style={{ fontSize: '14px', color: '#555' }}>
             Price: <span style={{ fontWeight: 'bold' }}>{nft.price} ETH</span>
           </p>
         )}
-        {onBuy && (
+        {onBuy && nft.isListed && (
           <Button type="primary" block onClick={onBuy} style={{ marginBottom: 8 }}>
             Buy
           </Button>
         )}
-        {onList && (
-          <Button block onClick={onList}>
-            List
-          </Button>
+        {!nft.isListed && onList && (
+          <div style={{ marginTop: 8 }}>
+            <Input
+              placeholder="Nhập giá (ETH)"
+              value={listPrice}
+              onChange={(e) => setListPrice(e.target.value)}
+              style={{ marginBottom: 8 }}
+            />
+            <Button block onClick={handleList}>
+              List
+            </Button>
+          </div>
         )}
       </div>
     </Card>
