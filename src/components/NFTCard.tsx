@@ -1,63 +1,45 @@
-import { Card, Button, Typography, Input, message } from 'antd';
+import React from 'react';
+import { Card, Button, Input, Space } from 'antd';
 import { NFTItem } from '../types';
-import { useState } from 'react';
 
-interface Props {
+interface NFTCardProps {
   nft: NFTItem;
+  showStatus?: boolean;
+  customAction?: React.ReactNode;
   onBuy?: () => void;
   onList?: (price: string) => void;
 }
 
-export const NFTCard = ({ nft, onBuy, onList }: Props) => {
-  const [listPrice, setListPrice] = useState('');
-
-  const handleList = () => {
-    if (!listPrice || isNaN(Number(listPrice)) || Number(listPrice) <= 0) {
-      return message.error('Nhập giá hợp lệ (ETH)!');
-    }
-    onList?.(listPrice);
-  };
+export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction, onBuy, onList }) => {
+  const [price, setPrice] = React.useState('');
 
   return (
     <Card
-      hoverable
-      cover={<img alt={nft.name} src={nft.image} style={{ objectFit: 'cover', width: '100%', height: 230 }} />}
-      style={{ width: 300, borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}
-    >
-      <Card.Meta
-        title={<Typography.Title level={5}>{nft.name}</Typography.Title>}
-        description={
-          <Typography.Paragraph ellipsis={{ rows: 1, expandable: true }}>{nft.description}</Typography.Paragraph>
-        }
-      />
-      <div style={{ marginTop: 10 }}>
-        <p style={{ fontSize: 14, color: '#555', wordBreak: 'break-word' }}>
-          <b>Owner:</b> {nft.owner}
-        </p>
-        {nft.isListed && nft.price && (
-          <p style={{ fontSize: 14, color: '#555' }}>
-            Giá: <b>{nft.price} ETH</b>
-          </p>
-        )}
-        {onBuy && nft.isListed && (
-          <Button type="primary" block onClick={onBuy} style={{ marginBottom: 8 }}>
+      cover={<img alt={nft.name} src={nft.image} style={{ height: 200, objectFit: 'cover' }} />}
+      actions={[
+        onBuy && (
+          <Button key="buy" type="primary" onClick={onBuy}>
             Mua
           </Button>
-        )}
-        {onList && !nft.isListed && (
-          <>
+        ),
+        onList && (
+          <Space key="list" direction="horizontal" size="small">
             <Input
               placeholder="Giá (ETH)"
-              value={listPrice}
-              onChange={(e) => setListPrice(e.target.value)}
-              style={{ marginBottom: 8 }}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              onPressEnter={() => onList(price)} // Keep Enter key support
+              style={{ width: 100 }}
             />
-            <Button block onClick={handleList}>
+            <Button type="primary" onClick={() => onList(price)}>
               Liệt kê
             </Button>
-          </>
-        )}
-      </div>
+          </Space>
+        )
+      ].filter(Boolean)}
+    >
+      <Card.Meta title={nft.name} description={nft.description} />
+      {showStatus && customAction}
     </Card>
   );
 };

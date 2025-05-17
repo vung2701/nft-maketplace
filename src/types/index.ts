@@ -1,3 +1,4 @@
+// src/types.ts
 export interface NFTItem {
   tokenId: number;
   name: string;
@@ -6,4 +7,5 @@ export interface NFTItem {
   owner: string;
   isListed: boolean;
   price?: string;
+  listingId?: number;
 }

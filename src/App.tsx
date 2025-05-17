@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
 import { Home } from './pages/Home';
-import { Marketplace } from './pages/MarketPlace';
 import './App.css';
+import Marketplace from './pages/MarketPlace';
 
 const { Header, Content } = Layout;
 

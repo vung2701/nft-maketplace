@@ -9,6 +9,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { MintForm } from '../components/MintForm';
 import { NFTCard } from '../components/NFTCard';
 import { parseEther } from 'viem';
+import { useNavigate } from 'react-router-dom';
 
 const convertIpfsToHttp = (ipfsUrl: string) =>
   ipfsUrl.startsWith('ipfs://') ? ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : ipfsUrl;
@@ -19,6 +20,7 @@ export const Home: React.FC = () => {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
+  const navigate = useNavigate();
 
   const { data: balance } = useReadContract({
     address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
@@ -40,6 +42,13 @@ export const Home: React.FC = () => {
         functionName: 'tokenCounter'
       });
 
+      // Fetch all listings from the marketplace
+      const listings = (await publicClient.readContract({
+        address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
+        abi: MarketPlace,
+        functionName: 'getListings'
+      })) as { seller: string; nftAddress: string; tokenId: bigint; price: bigint; isSold: boolean }[];
+
       for (let tokenId = 0; tokenId < Number(tokenCounter); tokenId++) {
         try {
           const tokenOwner = await publicClient.readContract({
@@ -60,25 +69,25 @@ export const Home: React.FC = () => {
               data: { name, description, image }
             } = await axios.get(convertIpfsToHttp(tokenURI as string));
 
-            const listing = await publicClient.readContract({
-              address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
-              abi: MarketPlace,
-              functionName: 'getListing',
-              args: [import.meta.env.VITE_NFT_CONTRACT_ADDRESS, BigInt(tokenId)]
-            });
+            // Check if the NFT is listed
+            const listing = listings.find(
+              (l) =>
+                l.nftAddress.toLowerCase() === import.meta.env.VITE_NFT_CONTRACT_ADDRESS.toLowerCase() &&
+                l.tokenId === BigInt(tokenId) &&
+                !l.isSold
+            );
+            const isListed = !!listing && listing.seller !== '0x0000000000000000000000000000000000000000';
 
-            const isListed = (listing as any)[0] !== '0x0000000000000000000000000000000000000000';
-            const price = isListed ? (Number((listing as any)[1]) / 1e18).toString() : undefined;
-
-            nftItems.push({
-              tokenId,
-              name,
-              description,
-              image: convertIpfsToHttp(image),
-              owner: address,
-              isListed,
-              price
-            });
+            if (!isListed) {
+              nftItems.push({
+                tokenId,
+                name,
+                description,
+                image: convertIpfsToHttp(image),
+                owner: address,
+                isListed: false
+              });
+            }
           }
         } catch (error) {
           console.log(`Skipping token ID ${tokenId}:`, error);
@@ -117,31 +126,9 @@ export const Home: React.FC = () => {
 
       message.success('Liệt kê NFT thành công 🎉');
       await fetchUserNFTs();
+      navigate('/marketplace');
     } catch (err: any) {
       message.error(`Lỗi khi liệt kê NFT: ${err.message || err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBuyNFT = async (tokenId: number, price: string) => {
-    if (!isConnected || !address) return message.error('Vui lòng kết nối ví!');
-
-    try {
-      setLoading(true);
-      const buyTx = await writeContractAsync({
-        address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
-        abi: MarketPlace,
-        functionName: 'buyNFT',
-        args: [import.meta.env.VITE_NFT_CONTRACT_ADDRESS, BigInt(tokenId)],
-        value: parseEther(price)
-      });
-      await publicClient.waitForTransactionReceipt({ hash: buyTx });
-
-      message.success('Mua NFT thành công 🎉');
-      await fetchUserNFTs();
-    } catch (err: any) {
-      message.error(`Lỗi khi mua NFT: ${err.message || err}`);
     } finally {
       setLoading(false);
     }
@@ -158,26 +145,21 @@ export const Home: React.FC = () => {
         <ConnectButton />
       </div>
       <MintForm onSuccess={fetchUserNFTs} />
-      {loading && <Spin />}
-      {nfts.length > 0 && (
-        <>
-          <Divider style={{ borderColor: '#bbb', margin: '30px 0', fontSize: 22 }}>NFT của bạn</Divider>
-          <Row gutter={[16, 16]}>
-            {nfts.map((nft) => (
-              <Col key={nft.tokenId} xs={24} sm={12} md={8} lg={6}>
-                <NFTCard
-                  nft={nft}
-                  onList={(price) => handleListNFT(nft.tokenId, price)}
-                  onBuy={
-                    nft.isListed && nft.owner.toLowerCase() !== address?.toLowerCase()
-                      ? () => handleBuyNFT(nft.tokenId, nft.price!)
-                      : undefined
-                  }
-                />
-              </Col>
-            ))}
-          </Row>
-        </>
+
+      <Divider style={{ borderColor: '#bbb', margin: '30px 0', fontSize: 22 }}>NFT của bạn (Chưa được list)</Divider>
+
+      {loading ? (
+        <Spin size="large" />
+      ) : nfts.length > 0 ? (
+        <Row gutter={[16, 16]}>
+          {nfts.map((nft) => (
+            <Col key={nft.tokenId} xs={24} sm={12} md={8} lg={6}>
+              <NFTCard nft={nft} onList={(price) => handleListNFT(nft.tokenId, price)} />
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <p>Bạn không có NFT nào chưa được list</p>
       )}
     </div>
   );
