@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
-import { Row, Col, message, Spin } from 'antd';
+import { Row, Col, message, Spin, Divider } from 'antd';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NFTCollection from '../abis/NFTCollection.json';
 import MarketPlace from '../abis/Marketplace.json';
@@ -154,7 +154,7 @@ const Marketplace = () => {
         <Spin size="large" style={{ display: 'block', margin: '40px auto' }} />
       ) : (
         <>
-          <h3 style={{ marginTop: 16 }}>NFT bạn đã list</h3>
+          <Divider style={{ borderColor: '#bbb', margin: '30px 0', fontSize: 22 }}>NFT của bạn (Đang bán)</Divider>
           <Row gutter={[16, 16]}>
             {myListedNFTs.length > 0 ? (
               myListedNFTs.map((nft) => (
@@ -163,7 +163,9 @@ const Marketplace = () => {
                     nft={nft}
                     showStatus
                     customAction={
-                      <div style={{ color: '#52c41a', fontWeight: 'bold' }}>ĐANG BÁN ({nft.price} ETH)</div>
+                      <div style={{ padding: '16px 0', color: '#52c41a', fontWeight: 'bold' }}>
+                        ĐANG BÁN ({nft.price} ETH)
+                      </div>
                     }
                   />
                 </Col>
@@ -175,7 +177,7 @@ const Marketplace = () => {
             )}
           </Row>
 
-          <h3 style={{ marginTop: 32 }}>NFT bạn có thể mua</h3>
+          <Divider style={{ borderColor: '#bbb', margin: '30px 0', fontSize: 22 }}>Cửa hàng NFT</Divider>
           <Row gutter={[16, 16]}>
             {otherListedNFTs.length > 0 ? (
               otherListedNFTs.map((nft) => (

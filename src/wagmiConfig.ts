@@ -1,6 +1,6 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { http } from 'wagmi';
-import { Chain } from 'wagmi/chains';
+import { Chain, sepolia } from 'wagmi/chains';
 
 // Định nghĩa mạng localhost
 const localhost = {
@@ -18,11 +18,14 @@ const localhost = {
   },
 } as const satisfies Chain;
 
+const sepoliaRpcUrl = import.meta.env.VITE_SEPOLIA_RPC_URL || 'https://rpc2.sepolia.org';
+
 export const config = getDefaultConfig({
   appName: 'NFT Marketplace',
   projectId: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID,
-  chains: [localhost],
+  chains: [localhost, sepolia],
   transports: {
+    [sepolia.id]: http(sepoliaRpcUrl),
     [localhost.id]: http('http://127.0.0.1:8545'),
   },
 });

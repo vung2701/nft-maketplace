@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NFTItem } from '../types';
-import { Row, Col, message, Divider, Spin } from 'antd';
+import { Row, Col, message, Divider, Spin, Tag } from 'antd';
 import { useAccount, usePublicClient, useReadContract, useWriteContract } from 'wagmi';
 import NFTCollection from '../abis/NFTCollection.json';
 import MarketPlace from '../abis/Marketplace.json';
@@ -13,6 +13,11 @@ import { useNavigate } from 'react-router-dom';
 
 const convertIpfsToHttp = (ipfsUrl: string) =>
   ipfsUrl.startsWith('ipfs://') ? ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : ipfsUrl;
+
+// Hàm rút gọn địa chỉ ví
+const shortenAddress = (address: string) => {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
 
 export const Home: React.FC = () => {
   const [nfts, setNfts] = useState<NFTItem[]>([]);
@@ -31,7 +36,7 @@ export const Home: React.FC = () => {
   });
 
   const fetchUserNFTs = async () => {
-    if (!isConnected || !address || !balance) return message.error('Vui lòng kết nối ví!');
+    if (!isConnected || !address) return message.error('Vui lòng kết nối ví!');
 
     try {
       setLoading(true);
@@ -84,7 +89,7 @@ export const Home: React.FC = () => {
                 name,
                 description,
                 image: convertIpfsToHttp(image),
-                owner: address,
+                owner: tokenOwner as string, // Sử dụng địa chỉ thực tế của chủ sở hữu
                 isListed: false
               });
             }
@@ -154,7 +159,16 @@ export const Home: React.FC = () => {
         <Row gutter={[16, 16]}>
           {nfts.map((nft) => (
             <Col key={nft.tokenId} xs={24} sm={12} md={8} lg={6}>
-              <NFTCard nft={nft} onList={(price) => handleListNFT(nft.tokenId, price)} />
+              <NFTCard
+                nft={nft}
+                onList={(price) => handleListNFT(nft.tokenId, price)}
+                customAction={
+                  <Tag color="blue" style={{ marginTop: 10 }}>
+                    Owner: {shortenAddress(nft.owner)}
+                  </Tag>
+                }
+                showStatus={true}
+              />
             </Col>
           ))}
         </Row>

@@ -15,30 +15,34 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction,
 
   return (
     <Card
-      cover={<img alt={nft.name} src={nft.image} style={{ height: 200, objectFit: 'cover' }} />}
+      cover={<img alt={nft.name} src={nft.image} style={{ height: 240, objectFit: 'cover' }} />}
       actions={[
         onBuy && (
-          <Button key="buy" type="primary" onClick={onBuy}>
-            Mua
-          </Button>
+          <div style={{ padding: '0 16px 16px' }}>
+            <Button key="buy" type="primary" onClick={onBuy} style={{ width: '100%' }}>
+              Mua
+            </Button>
+          </div>
         ),
         onList && (
-          <Space key="list" direction="horizontal" size="small">
-            <Input
-              placeholder="Giá (ETH)"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              onPressEnter={() => onList(price)} // Keep Enter key support
-              style={{ width: 100 }}
-            />
-            <Button type="primary" onClick={() => onList(price)}>
-              Liệt kê
-            </Button>
-          </Space>
+          <div style={{ padding: '0 16px 16px', width: '100%' }}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Input
+                placeholder="Giá (ETH)"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                onPressEnter={() => onList(price)}
+                style={{ width: '100%' }}
+              />
+              <Button type="primary" onClick={() => onList(price)} style={{ width: '100%' }}>
+                List vào Marketplace
+              </Button>
+            </Space>
+          </div>
         )
       ].filter(Boolean)}
     >
-      <Card.Meta title={nft.name} description={nft.description} />
+      <Card.Meta className="tft" title={nft.name} description={nft.description} />
       {showStatus && customAction}
     </Card>
   );
