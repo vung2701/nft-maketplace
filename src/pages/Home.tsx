@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NFTItem } from '../types';
 import { Row, Col, message, Divider, Spin, Tag } from 'antd';
-import { useAccount, usePublicClient, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useChainId, usePublicClient, useReadContract, useWriteContract } from 'wagmi';
 import NFTCollection from '../abis/NFTCollection.json';
 import MarketPlace from '../abis/Marketplace.json';
 import axios from 'axios';
@@ -10,6 +10,7 @@ import { MintForm } from '../components/MintForm';
 import { NFTCard } from '../components/NFTCard';
 import { parseEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
+import { MARKETPLACE_CONTRACTS, NFT_CONTRACTS } from '../types/network';
 
 const convertIpfsToHttp = (ipfsUrl: string) =>
   ipfsUrl.startsWith('ipfs://') ? ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : ipfsUrl;
@@ -26,9 +27,12 @@ export const Home: React.FC = () => {
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
   const navigate = useNavigate();
+  const chainId = useChainId();
+  const contractAddress = NFT_CONTRACTS[chainId];
+  const marketplaceAddress = MARKETPLACE_CONTRACTS[chainId];
 
   const { data: balance } = useReadContract({
-    address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+    address: contractAddress as `0x${string}`,
     abi: NFTCollection,
     functionName: 'balanceOf',
     args: [address],
@@ -42,14 +46,14 @@ export const Home: React.FC = () => {
       setLoading(true);
       const nftItems: NFTItem[] = [];
       const tokenCounter = await publicClient.readContract({
-        address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+        address: contractAddress as `0x${string}`,
         abi: NFTCollection,
         functionName: 'tokenCounter'
       });
 
       // Fetch all listings from the marketplace
       const listings = (await publicClient.readContract({
-        address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
+        address: marketplaceAddress as `0x${string}`,
         abi: MarketPlace,
         functionName: 'getListings'
       })) as { seller: string; nftAddress: string; tokenId: bigint; price: bigint; isSold: boolean }[];
@@ -57,7 +61,7 @@ export const Home: React.FC = () => {
       for (let tokenId = 0; tokenId < Number(tokenCounter); tokenId++) {
         try {
           const tokenOwner = await publicClient.readContract({
-            address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+            address: contractAddress as `0x${string}`,
             abi: NFTCollection,
             functionName: 'ownerOf',
             args: [BigInt(tokenId)]
@@ -65,7 +69,7 @@ export const Home: React.FC = () => {
 
           if (tokenOwner.toLowerCase() === address.toLowerCase()) {
             const tokenURI = await publicClient.readContract({
-              address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+              address: contractAddress as `0x${string}`,
               abi: NFTCollection,
               functionName: 'tokenURI',
               args: [BigInt(tokenId)]
@@ -77,7 +81,7 @@ export const Home: React.FC = () => {
             // Check if the NFT is listed
             const listing = listings.find(
               (l) =>
-                l.nftAddress.toLowerCase() === import.meta.env.VITE_NFT_CONTRACT_ADDRESS.toLowerCase() &&
+                l.nftAddress.toLowerCase() === contractAddress.toLowerCase() &&
                 l.tokenId === BigInt(tokenId) &&
                 !l.isSold
             );
@@ -114,18 +118,18 @@ export const Home: React.FC = () => {
     try {
       setLoading(true);
       const approveTx = await writeContractAsync({
-        address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+        address: contractAddress as `0x${string}`,
         abi: NFTCollection,
         functionName: 'approve',
-        args: [import.meta.env.VITE_MARKETPLACE_ADDRESS, BigInt(tokenId)]
+        args: [marketplaceAddress, BigInt(tokenId)]
       });
       await publicClient.waitForTransactionReceipt({ hash: approveTx });
 
       const listTx = await writeContractAsync({
-        address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
+        address: marketplaceAddress as `0x${string}`,
         abi: MarketPlace,
         functionName: 'listNFT',
-        args: [import.meta.env.VITE_NFT_CONTRACT_ADDRESS, BigInt(tokenId), parseEther(price)]
+        args: [contractAddress, BigInt(tokenId), parseEther(price)]
       });
       await publicClient.waitForTransactionReceipt({ hash: listTx });
 

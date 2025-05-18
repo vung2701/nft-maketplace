@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
+import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi';
 import { Row, Col, message, Spin, Divider } from 'antd';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NFTCollection from '../abis/NFTCollection.json';
@@ -7,6 +7,7 @@ import MarketPlace from '../abis/Marketplace.json';
 import { parseEther } from 'viem';
 import { NFTItem } from '../types';
 import { NFTCard } from '../components/NFTCard';
+import { MARKETPLACE_CONTRACTS, NFT_CONTRACTS } from '../types/network';
 
 const convertIpfsToHttp = (ipfsUrl: string) =>
   ipfsUrl.startsWith('ipfs://') ? ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : ipfsUrl;
@@ -20,6 +21,10 @@ const Marketplace = () => {
   const [otherListedNFTs, setOtherListedNFTs] = useState<NFTItem[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const chainId = useChainId();
+  const contractAddress = NFT_CONTRACTS[chainId];
+  const marketplaceAddress = MARKETPLACE_CONTRACTS[chainId];
+
   const fetchMyListedNFTs = async () => {
     if (!isConnected || !address) return;
 
@@ -28,14 +33,14 @@ const Marketplace = () => {
       const nftItems: NFTItem[] = [];
 
       const tokenCounter = await publicClient.readContract({
-        address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+        address: contractAddress as `0x${string}`,
         abi: NFTCollection,
         functionName: 'tokenCounter'
       });
 
       // Fetch all listings from the marketplace
       const listings = (await publicClient.readContract({
-        address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
+        address: marketplaceAddress as `0x${string}`,
         abi: MarketPlace,
         functionName: 'getListings'
       })) as { seller: string; nftAddress: string; tokenId: bigint; price: bigint; isSold: boolean }[];
@@ -43,7 +48,7 @@ const Marketplace = () => {
       for (let tokenId = 0; tokenId < Number(tokenCounter); tokenId++) {
         try {
           const tokenOwner = await publicClient.readContract({
-            address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+            address: contractAddress as `0x${string}`,
             abi: NFTCollection,
             functionName: 'ownerOf',
             args: [BigInt(tokenId)]
@@ -51,7 +56,7 @@ const Marketplace = () => {
 
           if (tokenOwner.toLowerCase() === address.toLowerCase()) {
             const tokenURI = await publicClient.readContract({
-              address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+              address: contractAddress as `0x${string}`,
               abi: NFTCollection,
               functionName: 'tokenURI',
               args: [BigInt(tokenId)]
@@ -65,7 +70,7 @@ const Marketplace = () => {
             // Check if the NFT is listed
             const listing = listings.find(
               (l) =>
-                l.nftAddress.toLowerCase() === import.meta.env.VITE_NFT_CONTRACT_ADDRESS.toLowerCase() &&
+                l.nftAddress.toLowerCase() === contractAddress.toLowerCase() &&
                 l.tokenId === BigInt(tokenId) &&
                 !l.isSold
             );
@@ -94,7 +99,7 @@ const Marketplace = () => {
       const otherNFTs = listings
         .filter(
           (l) =>
-            l.nftAddress.toLowerCase() === import.meta.env.VITE_NFT_CONTRACT_ADDRESS.toLowerCase() &&
+            l.nftAddress.toLowerCase() === contractAddress.toLowerCase() &&
             l.seller.toLowerCase() !== address.toLowerCase() &&
             !l.isSold
         )
@@ -122,7 +127,7 @@ const Marketplace = () => {
 
     try {
       const txHash = await writeContractAsync({
-        address: import.meta.env.VITE_MARKETPLACE_ADDRESS as `0x${string}`,
+        address: marketplaceAddress as `0x${string}`,
         abi: MarketPlace,
         functionName: 'buyNFT',
         args: [BigInt(nft.listingId!)], // Use listingId

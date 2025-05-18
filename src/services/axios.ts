@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 
-const API_URL = import.meta.env.VITE_BE_URL;
+const API_URL = import.meta.env.VITE_BE_SEPOLIA_URL;
 const PINATA_URL = import.meta.env.VITE_PINATA_URL;
 
 let axiosInstance: AxiosInstance;

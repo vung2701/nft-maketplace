@@ -2,8 +2,9 @@ import { Button, Form, Input, Upload, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { uploadFileToIPFS, uploadMetadataToIPFS } from '../services/apiPinata';
-import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
+import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi';
 import NFTCollection from '../abis/NFTCollection.json';
+import { NFT_CONTRACTS } from '../types/network';
 
 interface MintFormProps {
   onSuccess?: () => void;
@@ -16,6 +17,9 @@ export const MintForm = ({ onSuccess }: MintFormProps) => {
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const [form] = Form.useForm();
+
+  const chainId = useChainId();
+  const contractAddress = NFT_CONTRACTS[chainId];
 
   const handleFinish = async ({ name, description }: any) => {
     if (!isConnected || !address) return message.error('Vui lòng kết nối ví!');
@@ -31,7 +35,7 @@ export const MintForm = ({ onSuccess }: MintFormProps) => {
 
       message.loading('Đang mint NFT...');
       const mintTx = await writeContractAsync({
-        address: import.meta.env.VITE_NFT_CONTRACT_ADDRESS as `0x${string}`,
+        address: contractAddress as `0x${string}`,
         abi: NFTCollection,
         functionName: 'mintNFT',
         args: [address, tokenURI]
