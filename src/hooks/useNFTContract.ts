@@ -1,7 +1,7 @@
 import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi';
 import { NFT_CONTRACTS, MARKETPLACE_CONTRACTS } from '../types/network';
 import NFTCollection from '../abis/NFTCollection.json';
-import MarketPlace from '../abis/Marketplace.json';
+import MarketPlace from '../abis/MarketPlace.json';
 import { message } from 'antd';
 import { convertIpfsToHttp } from '../utils/web3';
 import axios from 'axios';
