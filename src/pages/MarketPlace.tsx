@@ -25,98 +25,68 @@ const Marketplace = () => {
   const contractAddress = NFT_CONTRACTS[chainId];
   const marketplaceAddress = MARKETPLACE_CONTRACTS[chainId];
 
-  const fetchMyListedNFTs = async () => {
+  const fetchListedNFTs = async () => {
     if (!isConnected || !address) return;
 
     try {
       setLoading(true);
-      const nftItems: NFTItem[] = [];
+      const myNFTs: NFTItem[] = [];
+      const otherNFTs: NFTItem[] = [];
 
-      const tokenCounter = await publicClient.readContract({
-        address: contractAddress as `0x${string}`,
-        abi: NFTCollection,
-        functionName: 'tokenCounter'
-      });
-
-      // Fetch all listings from the marketplace
+      // Lấy tất cả các listing từ marketplace
       const listings = (await publicClient.readContract({
         address: marketplaceAddress as `0x${string}`,
         abi: MarketPlace,
         functionName: 'getListings'
       })) as { seller: string; nftAddress: string; tokenId: bigint; price: bigint; isSold: boolean }[];
 
-      for (let tokenId = 0; tokenId < Number(tokenCounter); tokenId++) {
-        try {
-          const tokenOwner = await publicClient.readContract({
-            address: contractAddress as `0x${string}`,
-            abi: NFTCollection,
-            functionName: 'ownerOf',
-            args: [BigInt(tokenId)]
-          });
-
-          if (tokenOwner.toLowerCase() === address.toLowerCase()) {
+      // Duyệt qua từng listing để lấy thông tin chi tiết
+      for (const listing of listings) {
+        // Chỉ xử lý các NFT từ contractAddress và chưa được bán
+        if (listing.nftAddress.toLowerCase() === contractAddress.toLowerCase() && !listing.isSold) {
+          try {
+            // Lấy tokenURI từ hợp đồng NFT
             const tokenURI = await publicClient.readContract({
               address: contractAddress as `0x${string}`,
               abi: NFTCollection,
               functionName: 'tokenURI',
-              args: [BigInt(tokenId)]
+              args: [listing.tokenId]
             });
 
+            // Tải metadata từ tokenURI
             const { default: axios } = await import('axios');
             const {
               data: { name, description, image }
             } = await axios.get(convertIpfsToHttp(tokenURI as string));
 
-            // Check if the NFT is listed
-            const listing = listings.find(
-              (l) =>
-                l.nftAddress.toLowerCase() === contractAddress.toLowerCase() &&
-                l.tokenId === BigInt(tokenId) &&
-                !l.isSold
-            );
+            // Tạo đối tượng NFTItem
+            const nftItem: NFTItem = {
+              tokenId: Number(listing.tokenId),
+              name,
+              description,
+              image: convertIpfsToHttp(image),
+              owner: listing.seller,
+              isListed: true,
+              price: (Number(listing.price) / 1e18).toString(),
+              listingId: listings.indexOf(listing) // Lưu listingId để mua
+            };
 
-            if (listing && listing.seller.toLowerCase() === address.toLowerCase()) {
-              nftItems.push({
-                tokenId,
-                name,
-                description,
-                image: convertIpfsToHttp(image),
-                owner: address,
-                isListed: true,
-                price: (Number(listing.price) / 1e18).toString(),
-                listingId: listings.indexOf(listing) // Store listingId for buying
-              });
+            // Phân loại NFT
+            if (listing.seller.toLowerCase() === address.toLowerCase()) {
+              myNFTs.push(nftItem);
+            } else {
+              otherNFTs.push(nftItem);
             }
+          } catch (error) {
+            console.warn(`Lỗi khi lấy dữ liệu token ${listing.tokenId}:`, error);
           }
-        } catch (error) {
-          console.warn(`Lỗi với token ${tokenId}:`, error);
         }
       }
 
-      setMyListedNFTs(nftItems);
-
-      // Filter other listed NFTs (not owned by the user)
-      const otherNFTs = listings
-        .filter(
-          (l) =>
-            l.nftAddress.toLowerCase() === contractAddress.toLowerCase() &&
-            l.seller.toLowerCase() !== address.toLowerCase() &&
-            !l.isSold
-        )
-        .map((l, index) => ({
-          tokenId: Number(l.tokenId),
-          name: `NFT ${l.tokenId}`, // Placeholder; ideally fetch metadata
-          description: 'NFT từ người dùng khác',
-          image: 'https://via.placeholder.com/300', // Placeholder
-          owner: l.seller,
-          isListed: true,
-          price: (Number(l.price) / 1e18).toString(),
-          listingId: index // Store listingId for buying
-        }));
-
+      setMyListedNFTs(myNFTs);
       setOtherListedNFTs(otherNFTs);
     } catch (err) {
-      message.error('Lỗi khi tải NFT của bạn');
+      message.error('Lỗi khi tải danh sách NFT');
     } finally {
       setLoading(false);
     }
@@ -130,13 +100,13 @@ const Marketplace = () => {
         address: marketplaceAddress as `0x${string}`,
         abi: MarketPlace,
         functionName: 'buyNFT',
-        args: [BigInt(nft.listingId!)], // Use listingId
+        args: [BigInt(nft.listingId!)], // Sử dụng listingId
         value: parseEther(nft.price)
       });
 
       await publicClient.waitForTransactionReceipt({ hash: txHash });
       message.success('Mua NFT thành công 🎉');
-      fetchMyListedNFTs(); // Refresh lists
+      fetchListedNFTs(); // Làm mới danh sách sau khi mua
     } catch (err: any) {
       message.error(`Lỗi khi mua NFT: ${err.message || err}`);
     }
@@ -144,9 +114,13 @@ const Marketplace = () => {
 
   useEffect(() => {
     if (isConnected) {
-      fetchMyListedNFTs();
+      fetchListedNFTs();
+    } else {
+      // Clear NFTs when disconnected
+      setMyListedNFTs([]);
+      setOtherListedNFTs([]);
     }
-  }, [isConnected]);
+  }, [isConnected, address, chainId]);
 
   return (
     <div style={{ padding: 24 }}>

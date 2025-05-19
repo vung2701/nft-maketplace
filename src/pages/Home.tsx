@@ -27,6 +27,7 @@ export const Home: React.FC = () => {
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
   const navigate = useNavigate();
+
   const chainId = useChainId();
   const contractAddress = NFT_CONTRACTS[chainId];
   const marketplaceAddress = MARKETPLACE_CONTRACTS[chainId];
@@ -144,8 +145,12 @@ export const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isConnected && balance) fetchUserNFTs();
-  }, [isConnected, balance]);
+    if (isConnected && address) {
+      fetchUserNFTs();
+    } else {
+      setNfts([]);
+    }
+  }, [isConnected, address, chainId]);
 
   return (
     <div className="homePage">
