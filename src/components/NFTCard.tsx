@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, Button, Input, Space } from 'antd';
 import { NFTItem } from '../types';
+import { DEFAULT_VALUES, COLORS } from '../constants';
 
 interface NFTCardProps {
   nft: NFTItem;
@@ -10,21 +11,45 @@ interface NFTCardProps {
   onList?: (price: string) => void;
 }
 
-export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction, onBuy, onList }) => {
-  const [price, setPrice] = React.useState('');
+interface CardAction {
+  key: string;
+  content: React.ReactNode;
+}
 
-  return (
-    <Card
-      cover={<img alt={nft.name} src={nft.image} style={{ height: 240, objectFit: 'cover' }} />}
-      actions={[
-        onBuy && (
+export const NFTCard: React.FC<NFTCardProps> = ({ 
+  nft, 
+  showStatus, 
+  customAction, 
+  onBuy, 
+  onList 
+}) => {
+  const [price, setPrice] = useState('');
+
+  // Xử lý các actions của card
+  const getCardActions = (): CardAction[] => {
+    const actions: CardAction[] = [];
+
+    if (onBuy) {
+      actions.push({
+        key: 'buy',
+        content: (
           <div style={{ padding: '0 16px 16px' }}>
-            <Button key="buy" type="primary" onClick={onBuy} style={{ width: '100%' }}>
+            <Button 
+              type="primary" 
+              onClick={onBuy} 
+              style={{ width: '100%' }}
+            >
               Mua
             </Button>
           </div>
-        ),
-        onList && (
+        )
+      });
+    }
+
+    if (onList) {
+      actions.push({
+        key: 'list',
+        content: (
           <div style={{ padding: '0 16px 16px', width: '100%' }}>
             <Space direction="vertical" style={{ width: '100%' }}>
               <Input
@@ -34,15 +59,40 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction,
                 onPressEnter={() => onList(price)}
                 style={{ width: '100%' }}
               />
-              <Button type="primary" onClick={() => onList(price)} style={{ width: '100%' }}>
+              <Button 
+                type="primary" 
+                onClick={() => onList(price)} 
+                style={{ width: '100%' }}
+              >
                 List vào Marketplace
               </Button>
             </Space>
           </div>
         )
-      ].filter(Boolean)}
+      });
+    }
+
+    return actions;
+  };
+
+  return (
+    <Card
+      cover={
+        <img 
+          alt={nft.name} 
+          src={nft.image} 
+          style={{ 
+            height: DEFAULT_VALUES.IMAGE_HEIGHT, 
+            objectFit: 'cover' 
+          }} 
+        />
+      }
+      actions={getCardActions().map(action => action.content)}
     >
-      <Card.Meta className="tft" title={nft.name} description={nft.description} />
+      <Card.Meta 
+        title={nft.name} 
+        description={nft.description} 
+      />
       {showStatus && customAction}
     </Card>
   );

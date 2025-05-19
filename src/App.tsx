@@ -1,26 +1,20 @@
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
 import { Home } from './pages/Home';
-import './App.css';
 import Marketplace from './pages/MarketPlace';
-import { useEffect, useState } from 'react';
+import { ROUTES, DEFAULT_VALUES } from './constants';
+import './styles/global.css';
 
 const { Header, Content } = Layout;
 
-function App() {
+const App: React.FC = () => {
   const location = useLocation();
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   useEffect(() => {
-    // Xác định key dựa trên pathname
     const path = location.pathname;
-    if (path === '/') {
-      setSelectedKeys(['home']);
-    } else if (path === '/marketplace') {
-      setSelectedKeys(['marketplace']);
-    } else {
-      setSelectedKeys([]);
-    }
+    setSelectedKeys([path === ROUTES.HOME ? 'home' : path === ROUTES.MARKETPLACE ? 'marketplace' : '']);
   }, [location]);
 
   return (
@@ -33,31 +27,38 @@ function App() {
           items={[
             {
               key: 'home',
-              label: <Link to="/">Home</Link>
+              label: <Link to={ROUTES.HOME}>Home</Link>
             },
             {
               key: 'marketplace',
-              label: <Link to="/marketplace">Marketplace</Link>
+              label: <Link to={ROUTES.MARKETPLACE}>Marketplace</Link>
             }
           ]}
         />
       </Header>
-      <Content style={{ margin: '40px', minHeight: 'calc(100vh - 64px)' }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-        </Routes>
+      <Content 
+        style={{ 
+          margin: DEFAULT_VALUES.CONTENT_MARGIN, 
+          minHeight: `calc(100vh - ${DEFAULT_VALUES.HEADER_HEIGHT}px)` 
+        }}
+      >
+        <div className="container">
+          <Routes>
+            <Route path={ROUTES.HOME} element={<Home />} />
+            <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
+          </Routes>
+        </div>
       </Content>
     </Layout>
   );
-}
+};
 
-function AppWrapper() {
+const AppWrapper: React.FC = () => {
   return (
     <Router>
       <App />
     </Router>
   );
-}
+};
 
 export default AppWrapper;
