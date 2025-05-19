@@ -66,6 +66,54 @@ h3 {
   margin: 16px 0;
 }
 
+/* Loading Components */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-overlay .ant-spin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-overlay .ant-spin-text {
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.content-loading {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+
+.content-loading .ant-spin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.content-loading .ant-spin-text {
+  margin-top: 8px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {

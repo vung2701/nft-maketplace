@@ -4,6 +4,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import { uploadFileToIPFS, uploadMetadataToIPFS } from '../services/apiPinata';
 import { useNFTContract } from '../hooks/useNFTContract';
 import { MESSAGES, MINT_STEPS } from '../constants';
+import { LoadingOverlay } from './LoadingOverlay';
 
 interface MintFormProps {
   onSuccess?: () => void;
@@ -64,51 +65,54 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <Form form={form} layout="vertical" onFinish={handleFinish}>
-      <Form.Item 
-        label="Tên NFT" 
-        name="name" 
-        rules={[{ required: true, message: 'Nhập tên NFT' }]}
-      >
-        <Input disabled={loading} />
-      </Form.Item>
-
-      <Form.Item 
-        label="Mô tả" 
-        name="description" 
-        rules={[{ required: true, message: 'Nhập mô tả' }]}
-      >
-        <Input.TextArea rows={3} disabled={loading} />
-      </Form.Item>
-
-      <Form.Item 
-        label="Upload ảnh" 
-        rules={[{ required: true, message: 'Chọn ảnh' }]}
-      >
-        <Upload
-          beforeUpload={(file) => {
-            setFile(file);
-            return false;
-          }}
-          maxCount={1}
-          fileList={file ? [file as any] : []}
-          onRemove={() => setFile(null)}
-          disabled={loading}
+    <>
+      {loading && <LoadingOverlay tip={currentStep} />}
+      <Form form={form} layout="vertical" onFinish={handleFinish}>
+        <Form.Item 
+          label="Tên NFT" 
+          name="name" 
+          rules={[{ required: true, message: 'Nhập tên NFT' }]}
         >
-          <Button icon={<UploadOutlined />} disabled={loading}>
-            Chọn ảnh
-          </Button>
-        </Upload>
-      </Form.Item>
+          <Input disabled={loading} />
+        </Form.Item>
 
-      <Button 
-        type="primary" 
-        htmlType="submit" 
-        loading={loading} 
-        disabled={!isConnected || loading}
-      >
-        {loading ? currentStep : 'Mint NFT'}
-      </Button>
-    </Form>
+        <Form.Item 
+          label="Mô tả" 
+          name="description" 
+          rules={[{ required: true, message: 'Nhập mô tả' }]}
+        >
+          <Input.TextArea rows={3} disabled={loading} />
+        </Form.Item>
+
+        <Form.Item 
+          label="Upload ảnh" 
+          rules={[{ required: true, message: 'Chọn ảnh' }]}
+        >
+          <Upload
+            beforeUpload={(file) => {
+              setFile(file);
+              return false;
+            }}
+            maxCount={1}
+            fileList={file ? [file as any] : []}
+            onRemove={() => setFile(null)}
+            disabled={loading}
+          >
+            <Button icon={<UploadOutlined />} disabled={loading}>
+              Chọn ảnh
+            </Button>
+          </Upload>
+        </Form.Item>
+
+        <Button 
+          type="primary" 
+          htmlType="submit" 
+          loading={loading} 
+          disabled={!isConnected || loading}
+        >
+          Mint NFT
+        </Button>
+      </Form>
+    </>
   );
 };
