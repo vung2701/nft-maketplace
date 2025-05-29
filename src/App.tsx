@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { Layout, Menu } from 'antd';
 import { Home } from './pages/Home';
 import Marketplace from './pages/MarketPlace';
+import TheGraphDemo from './pages/TheGraphDemo';
 import { ROUTES, DEFAULT_VALUES } from './constants';
 import './styles/global.css';
 
@@ -14,7 +15,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const path = location.pathname;
-    setSelectedKeys([path === ROUTES.HOME ? 'home' : path === ROUTES.MARKETPLACE ? 'marketplace' : '']);
+    setSelectedKeys([
+      path === ROUTES.HOME ? 'home' : 
+      path === ROUTES.MARKETPLACE ? 'marketplace' : 
+      path === ROUTES.THE_GRAPH ? 'the-graph' : ''
+    ]);
   }, [location]);
 
   return (
@@ -32,6 +37,10 @@ const App: React.FC = () => {
             {
               key: 'marketplace',
               label: <Link to={ROUTES.MARKETPLACE}>Marketplace</Link>
+            },
+            {
+              key: 'the-graph',
+              label: <Link to={ROUTES.THE_GRAPH}>The Graph Demo</Link>
             }
           ]}
         />
@@ -46,6 +55,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path={ROUTES.HOME} element={<Home />} />
             <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
+            <Route path={ROUTES.THE_GRAPH} element={<TheGraphDemo />} />
           </Routes>
         </div>
       </Content>

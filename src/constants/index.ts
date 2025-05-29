@@ -1,7 +1,8 @@
 // Các routes trong ứng dụng
 export const ROUTES = {
 	HOME: '/',
-	MARKETPLACE: '/marketplace'
+	MARKETPLACE: '/marketplace',
+	THE_GRAPH: '/the-graph'
 } as const;
 
 // Các message thông báo
