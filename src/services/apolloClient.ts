@@ -1,13 +1,9 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
 
-// URL của subgraph đã deploy - cập nhật với subgraph ID thực tế
-// Để sử dụng URL này, bạn cần deploy subgraph của mình lên The Graph Studio
-// Hiện tại đây là URL demo - thay thế bằng URL subgraph thực tế của bạn
-const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/971787413b95ff8fcd7b0d845dfeb64b/nft-marketplace/v0.0.1'
+const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/112713/nft-marketplace/v0.0.2'
 
 const httpLink = createHttpLink({
 	uri: SUBGRAPH_URL,
-	// Thêm headers và error handling
 	fetch: (uri, options) => {
 		return fetch(uri, {
 			...options,
