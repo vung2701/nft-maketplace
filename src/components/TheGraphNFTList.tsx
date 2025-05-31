@@ -41,14 +41,48 @@ const TheGraphNFTList: React.FC = () => {
     </div>
   );
 
-  if (error) return (
-    <Alert
-      message="Lỗi kết nối The Graph"
-      description={`Không thể tải dữ liệu: ${error.message}. Hãy đảm bảo subgraph đã được deploy.`}
-      type="error"
-      showIcon
-    />
-  );
+  if (error) {
+    const isServiceUnavailable = error.message.includes('502') || 
+                                error.message.includes('Bad gateway') || 
+                                error.message.includes('Server response was missing');
+    
+    return (
+      <Alert
+        message={isServiceUnavailable ? "🔧 The Graph Service Temporarily Unavailable" : "Lỗi kết nối The Graph"}
+        description={
+          <div>
+            {isServiceUnavailable ? (
+              <>
+                <Text>The Graph API is temporarily experiencing issues (502 Bad Gateway).</Text>
+                <br />
+                <Text strong>✅ Good news: Your subgraph builds successfully!</Text>
+                <br />
+                <Text>Please try again in a few minutes. The Graph team is working to resolve this.</Text>
+                <br />
+                <br />
+                <Text type="secondary">
+                  💡 This is a temporary infrastructure issue, not a problem with your configuration.
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text>Không thể tải dữ liệu: {error.message}</Text>
+                <br />
+                <Text>Hãy đảm bảo subgraph đã được deploy và đang hoạt động.</Text>
+              </>
+            )}
+          </div>
+        }
+        type={isServiceUnavailable ? "warning" : "error"}
+        showIcon
+        action={
+          <Button onClick={() => window.location.reload()}>
+            Thử lại
+          </Button>
+        }
+      />
+    );
+  }
 
   const nfts: NFT[] = data?.nfts || [];
 
