@@ -4,6 +4,7 @@ import { Layout, Menu } from 'antd';
 import { Home } from './pages/Home';
 import Marketplace from './pages/MarketPlace';
 import TheGraphDemo from './pages/TheGraphDemo';
+import MoralisDemo from './pages/MoralisDemo';
 import { ROUTES, DEFAULT_VALUES } from './constants';
 import './styles/global.css';
 
@@ -18,7 +19,8 @@ const App: React.FC = () => {
     setSelectedKeys([
       path === ROUTES.HOME ? 'home' : 
       path === ROUTES.MARKETPLACE ? 'marketplace' : 
-      path === ROUTES.THE_GRAPH ? 'the-graph' : ''
+      path === ROUTES.THE_GRAPH ? 'the-graph' : 
+      path === ROUTES.MORALIS ? 'moralis' : ''
     ]);
   }, [location]);
 
@@ -40,7 +42,11 @@ const App: React.FC = () => {
             },
             {
               key: 'the-graph',
-              label: <Link to={ROUTES.THE_GRAPH}>The Graph Demo</Link>
+              label: <Link to={ROUTES.THE_GRAPH}>The Graph</Link>
+            },
+            {
+              key: 'moralis',
+              label: <Link to={ROUTES.MORALIS}>Moralis</Link>
             }
           ]}
         />
@@ -56,6 +62,7 @@ const App: React.FC = () => {
             <Route path={ROUTES.HOME} element={<Home />} />
             <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
             <Route path={ROUTES.THE_GRAPH} element={<TheGraphDemo />} />
+            <Route path={ROUTES.MORALIS} element={<MoralisDemo />} />
           </Routes>
         </div>
       </Content>

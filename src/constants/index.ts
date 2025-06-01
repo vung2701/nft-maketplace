@@ -2,7 +2,8 @@
 export const ROUTES = {
 	HOME: '/',
 	MARKETPLACE: '/marketplace',
-	THE_GRAPH: '/the-graph'
+	THE_GRAPH: '/the-graph',
+	MORALIS: '/moralis'
 } as const;
 
 // Các message thông báo
