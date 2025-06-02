@@ -42,38 +42,31 @@ const TheGraphNFTList: React.FC = () => {
   );
 
   if (error) {
+    console.log('The Graph Error:', error.message);
     const isServiceUnavailable = error.message.includes('502') || 
                                 error.message.includes('Bad gateway') || 
                                 error.message.includes('Server response was missing');
     
+    if (isServiceUnavailable) {
+      console.log('The Graph Service Temporarily Unavailable - 502 Bad Gateway');
+    }
+    
     return (
       <Alert
-        message={isServiceUnavailable ? "🔧 The Graph Service Temporarily Unavailable" : "Lỗi kết nối The Graph"}
+        message="🛠️ Chức năng đang hoàn thiện"
         description={
           <div>
-            {isServiceUnavailable ? (
-              <>
-                <Text>The Graph API is temporarily experiencing issues (502 Bad Gateway).</Text>
-                <br />
-                <Text strong>✅ Good news: Your subgraph builds successfully!</Text>
-                <br />
-                <Text>Please try again in a few minutes. The Graph team is working to resolve this.</Text>
-                <br />
-                <br />
-                <Text type="secondary">
-                  💡 This is a temporary infrastructure issue, not a problem with your configuration.
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text>Không thể tải dữ liệu: {error.message}</Text>
-                <br />
-                <Text>Hãy đảm bảo subgraph đã được deploy và đang hoạt động.</Text>
-              </>
-            )}
+            <Text>Chức năng đang được phát triển và hoàn thiện.</Text>
+            <br />
+            <Text strong>Vui lòng chờ đợi trong thời gian tới!</Text>
+            <br />
+            <br />
+            <Text type="secondary">
+              💡 Cảm ơn bạn đã kiên nhẫn chờ đợi.
+            </Text>
           </div>
         }
-        type={isServiceUnavailable ? "warning" : "error"}
+        type="warning"
         showIcon
         action={
           <Button onClick={() => window.location.reload()}>

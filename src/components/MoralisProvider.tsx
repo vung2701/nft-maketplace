@@ -32,6 +32,11 @@ export const MoralisProvider: React.FC<MoralisProviderProps> = ({
 
   // Show status if requested
   if (showStatus) {
+    // Log error to console if there's a Moralis error
+    if (!moralis.isLoading && moralis.error) {
+      console.log('Moralis Initialization Error:', moralis.error);
+    }
+    
     return (
       <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -50,23 +55,15 @@ export const MoralisProvider: React.FC<MoralisProviderProps> = ({
 
         {!moralis.isLoading && moralis.error && (
           <Alert
-            message="Moralis Initialization Failed"
+            message="🛠️ Chức năng Moralis đang hoàn thiện"
             description={
               <div>
-                <Text strong>Error: </Text>
-                <Text code>{moralis.error}</Text>
+                <Text>Chức năng Moralis đang được phát triển và hoàn thiện.</Text>
                 <br />
-                <br />
-                <Text strong>To fix this:</Text>
-                <ol>
-                  <li>Create account at <a href="https://admin.moralis.io/" target="_blank" rel="noopener noreferrer">https://admin.moralis.io/</a></li>
-                  <li>Create a new project and get your API key</li>
-                  <li>Add <Text code>VITE_MORALIS_API_KEY=your_key_here</Text> to your .env file</li>
-                  <li>Restart the development server</li>
-                </ol>
+                <Text strong>Vui lòng chờ đợi trong thời gian tới!</Text>
               </div>
             }
-            type="error"
+            type="warning"
             showIcon
             icon={<WarningOutlined />}
           />
@@ -141,36 +138,32 @@ export const useMoralisContext = (): MoralisContextType => {
 export const MoralisStatus: React.FC = () => {
   const { isInitialized, isLoading, error, isReady } = useMoralisContext()
 
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Spin size="small" />
-        <Text type="secondary">Initializing Moralis...</Text>
-      </div>
-    )
-  }
-
+  // Log error to console
   if (error) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <WarningOutlined style={{ color: '#f5222d' }} />
-        <Text type="danger">Moralis Error</Text>
-      </div>
-    )
+    console.log('Moralis Status Error:', error);
   }
 
-  if (isReady) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <DatabaseOutlined style={{ color: '#52c41a' }} />
-        <Text type="success">Moralis Ready</Text>
-      </div>
-    )
-  }
+  if (isLoading) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Spin size="small" />
+      <Text type="secondary">Initializing Moralis...</Text>
+    </div>
+  )
+
+  if (error) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Text type="warning">🛠️ Chức năng đang hoàn thiện</Text>
+    </div>
+  )
+
+  if (isReady) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Text type="success">Moralis Ready</Text>
+    </div>
+  )
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <WarningOutlined style={{ color: '#fa8c16' }} />
       <Text type="warning">Moralis Not Configured</Text>
     </div>
   )

@@ -12,8 +12,8 @@ const httpLink = createHttpLink({
 				'Content-Type': 'application/json',
 			},
 		}).catch(error => {
-			console.error('Lỗi kết nối The Graph:', error)
-			throw new Error('Không thể kết nối đến The Graph. Vui lòng kiểm tra subgraph deployment.')
+			console.log('Lỗi kết nối The Graph:', error)
+			throw new Error('The Graph connection error - feature in development')
 		})
 	}
 })

@@ -8,14 +8,19 @@ const MarketplaceStats: React.FC = () => {
 
   if (loading) return <Spin size="large" />;
   
-  if (error) return (
-    <Alert
-      message="Lỗi tải thống kê"
-      description={error.message}
-      type="error"
-      showIcon
-    />
-  );
+  if (error) {
+    // Log error to console instead of showing to user
+    console.log('The Graph Marketplace Stats Error:', error.message);
+    
+    return (
+      <Alert
+        message="🛠️ Chức năng thống kê đang hoàn thiện"
+        description="Chức năng thống kê marketplace đang được phát triển. Vui lòng chờ đợi!"
+        type="warning"
+        showIcon
+      />
+    );
+  }
 
   const nfts = data?.nfts || [];
   const sales = data?.sales || [];

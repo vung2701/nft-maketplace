@@ -4,9 +4,8 @@ import { SearchOutlined, ReloadOutlined, UserOutlined, PictureOutlined } from '@
 import { useAccount } from 'wagmi'
 import { useUserNFTs, useContractNFTs } from '../hooks/useMoralis'
 import { useMoralisContext } from './MoralisProvider'
-import { getMoralisConfig } from '../services/moralis/client'
 
-const { Title, Text } = Typography
+const { Title, Text, Paragraph } = Typography
 const { Meta } = Card
 const { Search } = Input
 const { Option } = Select
@@ -17,9 +16,6 @@ const MoralisNFTList: React.FC = () => {
   const [selectedChain, setSelectedChain] = useState('polygon')
   const [contractSearch, setContractSearch] = useState('')
   const [showContractNFTs, setShowContractNFTs] = useState(false)
-
-  // Get Moralis config for available chains
-  const moralisConfig = getMoralisConfig()
 
   // User NFTs hook
   const {
@@ -54,6 +50,14 @@ const MoralisNFTList: React.FC = () => {
     } else {
       setShowContractNFTs(false)
     }
+  }
+
+  // Log errors to console
+  if (contractError) {
+    console.log('Moralis Contract Error:', contractError);
+  }
+  if (userError) {
+    console.log('Moralis User NFTs Error:', userError);
   }
 
   const NFTCard: React.FC<{ nft: any; source: 'user' | 'contract' }> = ({ nft, source }) => (
@@ -133,16 +137,21 @@ const MoralisNFTList: React.FC = () => {
   )
 
   if (!isReady) {
+    // Log error to console if there's a Moralis error
+    if (moralisError) {
+      console.log('Moralis Error:', moralisError);
+    }
+    
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         {moralisError ? (
           <Alert
-            message="Moralis Not Available"
+            message="🛠️ Chức năng Moralis đang hoàn thiện"
             description={
               <div>
-                <Text>Moralis is not configured. Please set up your API key to use NFT features.</Text>
+                <Text>Chức năng NFT Explorer đang được phát triển và hoàn thiện.</Text>
                 <br />
-                <Text type="secondary">You can still use The Graph for marketplace data.</Text>
+                <Text strong>Vui lòng chờ đợi trong thời gian tới!</Text>
               </div>
             }
             type="warning"
@@ -176,13 +185,12 @@ const MoralisNFTList: React.FC = () => {
           <Select
             value={selectedChain}
             onChange={setSelectedChain}
-            style={{ width: 140 }}
+            style={{ width: 120 }}
           >
-            {moralisConfig.chainHelpers?.availableChains.map((chain) => (
-              <Option key={chain.key} value={chain.key}>
-                {chain.name}
-              </Option>
-            ))}
+            <Option value="polygon">Polygon</Option>
+            <Option value="eth">Ethereum</Option>
+            <Option value="bsc">BSC</Option>
+            <Option value="avalanche">Avalanche</Option>
           </Select>
           
           <Button 
@@ -228,9 +236,9 @@ const MoralisNFTList: React.FC = () => {
             </div>
           ) : contractError ? (
             <Alert
-              message="Error loading contract NFTs"
-              description={contractError}
-              type="error"
+              message="🛠️ Chức năng Contract NFTs đang hoàn thiện"
+              description="Chức năng tìm kiếm NFT theo contract đang được phát triển. Vui lòng chờ đợi!"
+              type="warning"
               showIcon
               style={{ marginBottom: '24px' }}
             />
@@ -283,13 +291,13 @@ const MoralisNFTList: React.FC = () => {
         </div>
       ) : userError ? (
         <Alert
-          message="Error loading your NFTs"
-          description={userError}
-          type="error"
+          message="🛠️ Chức năng My NFTs đang hoàn thiện"
+          description="Chức năng hiển thị NFT cá nhân đang được phát triển. Vui lòng chờ đợi!"
+          type="warning"
           showIcon
           action={
-            <Button size="small" danger onClick={userRefresh}>
-              Retry
+            <Button size="small" onClick={userRefresh}>
+              Thử lại
             </Button>
           }
         />
