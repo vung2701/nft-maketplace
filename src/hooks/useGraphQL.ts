@@ -1,71 +1,69 @@
-import { useQuery } from '@apollo/client'
+import { useQuery } from '@tanstack/react-query'
+import { request } from 'graphql-request'
 import {
-	GET_ALL_NFTS,
-	GET_LISTED_NFTS,
-	GET_USER_NFTS,
-	GET_NFT_DETAIL,
-	GET_SALES_HISTORY,
-	GET_MARKETPLACE_STATS
-} from '../services/graphqlQueries'
+	SUBGRAPH_URL,
+	GET_ACTIVE_LISTINGS,
+	GET_PURCHASE_HISTORY,
+	GET_MARKETPLACE_STATS,
+	formatPrice,
+	formatAddress,
+	formatDate
+} from '../services/graphqlClient'
 
-// Hook lấy tất cả NFT
-export const useAllNFTs = (first: number = 12, skip: number = 0) => {
-	return useQuery(GET_ALL_NFTS, {
-		variables: { first, skip },
-		fetchPolicy: 'cache-and-network'
+// Hook lấy listings đang active
+export const useActiveListings = (first: number = 12, skip: number = 0) => {
+	return useQuery({
+		queryKey: ['active-listings', first, skip],
+		async queryFn() {
+			try {
+				return await request(SUBGRAPH_URL, GET_ACTIVE_LISTINGS, { first, skip })
+			} catch (error) {
+				console.log('The Graph Error (Active Listings):', error)
+				throw new Error('The Graph connection error - feature in development')
+			}
+		},
+		staleTime: 60 * 1000,
+		retry: 1
 	})
 }
 
-// Hook lấy NFT đang được bán
-export const useListedNFTs = (first: number = 12, skip: number = 0) => {
-	return useQuery(GET_LISTED_NFTS, {
-		variables: { first, skip },
-		fetchPolicy: 'cache-and-network'
-	})
-}
-
-// Hook lấy NFT của user
-export const useUserNFTs = (owner: string) => {
-	return useQuery(GET_USER_NFTS, {
-		variables: { owner: owner.toLowerCase() },
-		skip: !owner,
-		fetchPolicy: 'cache-and-network'
-	})
-}
-
-// Hook lấy chi tiết NFT
-export const useNFTDetail = (tokenId: string) => {
-	return useQuery(GET_NFT_DETAIL, {
-		variables: { tokenId },
-		skip: !tokenId,
-		fetchPolicy: 'cache-and-network'
-	})
-}
-
-// Hook lấy lịch sử giao dịch
-export const useSalesHistory = (first: number = 20) => {
-	return useQuery(GET_SALES_HISTORY, {
-		variables: { first },
-		fetchPolicy: 'cache-and-network'
+// Hook lấy lịch sử mua bán
+export const usePurchaseHistory = (first: number = 20) => {
+	return useQuery({
+		queryKey: ['purchase-history', first],
+		async queryFn() {
+			try {
+				return await request(SUBGRAPH_URL, GET_PURCHASE_HISTORY, { first })
+			} catch (error) {
+				console.log('The Graph Error (Purchase History):', error)
+				throw new Error('The Graph connection error - feature in development')
+			}
+		},
+		staleTime: 60 * 1000,
+		retry: 1
 	})
 }
 
 // Hook thống kê marketplace
 export const useMarketplaceStats = () => {
-	return useQuery(GET_MARKETPLACE_STATS, {
-		fetchPolicy: 'cache-and-network'
+	return useQuery({
+		queryKey: ['marketplace-stats'],
+		async queryFn() {
+			try {
+				return await request(SUBGRAPH_URL, GET_MARKETPLACE_STATS, {})
+			} catch (error) {
+				console.log('The Graph Error (Marketplace Stats):', error)
+				throw new Error('The Graph connection error - feature in development')
+			}
+		},
+		staleTime: 5 * 60 * 1000, // 5 minutes for stats
+		retry: 1
 	})
 }
 
-// Utility functions
-export const formatPrice = (price: string | number) => {
-	return parseFloat(price.toString()) / 1e18 // Convert từ wei sang ETH
-}
+// Backward compatibility
+export const useListedNFTs = useActiveListings
+export const useSalesHistory = usePurchaseHistory
 
-export const formatAddress = (address: string) => {
-	return `${address.slice(0, 6)}...${address.slice(-4)}`
-}
-
-export const formatDate = (timestamp: string | number) => {
-	return new Date(parseInt(timestamp.toString()) * 1000).toLocaleDateString()
-} 
+// Export utility functions
+export { formatPrice, formatAddress, formatDate } 

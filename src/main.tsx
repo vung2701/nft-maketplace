@@ -5,27 +5,32 @@ import './index.css';
 import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ApolloProvider } from '@apollo/client';
 import { MoralisProvider } from './components/MoralisProvider';
 import { config } from './wagmiConfig';
-import { apolloClient } from './services/apolloClient';
 import '@rainbow-me/rainbowkit/styles.css';
 import './styles/global.css';
 
-const queryClient = new QueryClient();
+// Create QueryClient with proper configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      retry: 1,
+      refetchOnWindowFocus: false
+    }
+  }
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <MoralisProvider>
-      <ApolloProvider client={apolloClient}>
-        <WagmiProvider config={config}>
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider>
-              <App />
-            </RainbowKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </ApolloProvider>
-    </MoralisProvider>
+    <QueryClientProvider client={queryClient}>
+      {/* <MoralisProvider> */}
+      <WagmiProvider config={config}>
+        <RainbowKitProvider>
+          <App />
+        </RainbowKitProvider>
+      </WagmiProvider>
+      {/* </MoralisProvider> */}
+    </QueryClientProvider>
   </React.StrictMode>
 );

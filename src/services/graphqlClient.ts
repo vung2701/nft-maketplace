@@ -1,6 +1,13 @@
-import { gql } from '@apollo/client'
+import { gql } from 'graphql-request'
 
-// Lấy tất cả listings
+export const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/112713/nft-marketplace/version/latest'
+
+// Optional headers for authentication (if needed)
+export const headers = {
+  // Authorization: 'Bearer {api-key}' // Uncomment if API key is required
+}
+
+// GraphQL queries
 export const GET_ALL_LISTINGS = gql`
   query GetAllListings($first: Int!, $skip: Int!) {
     listings(first: $first, skip: $skip, orderBy: listedAt, orderDirection: desc) {
@@ -18,7 +25,6 @@ export const GET_ALL_LISTINGS = gql`
   }
 `
 
-// Lấy listings đang active
 export const GET_ACTIVE_LISTINGS = gql`
   query GetActiveListings($first: Int!, $skip: Int!) {
     listings(first: $first, skip: $skip, where: { isSold: false }, orderBy: listedAt, orderDirection: desc) {
@@ -33,7 +39,6 @@ export const GET_ACTIVE_LISTINGS = gql`
   }
 `
 
-// Lấy listings của một user
 export const GET_USER_LISTINGS = gql`
   query GetUserListings($seller: String!) {
     listings(where: { seller: $seller }, orderBy: listedAt, orderDirection: desc) {
@@ -51,7 +56,6 @@ export const GET_USER_LISTINGS = gql`
   }
 `
 
-// Lấy chi tiết một listing
 export const GET_LISTING_DETAIL = gql`
   query GetListingDetail($id: String!) {
     listing(id: $id) {
@@ -77,7 +81,6 @@ export const GET_LISTING_DETAIL = gql`
   }
 `
 
-// Lấy lịch sử mua bán (purchases)
 export const GET_PURCHASE_HISTORY = gql`
   query GetPurchaseHistory($first: Int!) {
     purchases(first: $first, orderBy: timestamp, orderDirection: desc) {
@@ -89,16 +92,10 @@ export const GET_PURCHASE_HISTORY = gql`
       price
       timestamp
       transactionHash
-      listing {
-        id
-        listingId
-        listedAt
-      }
     }
   }
 `
 
-// Lấy thống kê marketplace từ MarketplaceStat entity
 export const GET_MARKETPLACE_STATS = gql`
   query GetMarketplaceStats {
     marketplaceStats(first: 1) {
@@ -113,7 +110,6 @@ export const GET_MARKETPLACE_STATS = gql`
   }
 `
 
-// Lấy thông tin user
 export const GET_USER_STATS = gql`
   query GetUserStats($address: String!) {
     user(id: $address) {
@@ -128,33 +124,15 @@ export const GET_USER_STATS = gql`
   }
 `
 
-// Lấy top users theo volume
-export const GET_TOP_USERS = gql`
-  query GetTopUsers($first: Int!) {
-    users(first: $first, orderBy: totalVolumeAsBuyer, orderDirection: desc) {
-      id
-      address
-      totalListings
-      totalPurchases
-      totalSales
-      totalVolumeAsBuyer
-      totalVolumeAsSeller
-    }
-  }
-`
+// Utility functions
+export const formatPrice = (price: string | number) => {
+  return parseFloat(price.toString()) / 1e18 // Convert từ wei sang ETH
+}
 
-// Lấy listings theo NFT address và token ID
-export const GET_LISTINGS_BY_NFT = gql`
-  query GetListingsByNFT($nftAddress: String!, $tokenId: String!) {
-    listings(where: { nftAddress: $nftAddress, tokenId: $tokenId }, orderBy: listedAt, orderDirection: desc) {
-      id
-      listingId
-      seller
-      price
-      isSold
-      listedAt
-      soldAt
-      transactionHash
-    }
-  }
-` 
+export const formatAddress = (address: string) => {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
+export const formatDate = (timestamp: string | number) => {
+  return new Date(parseInt(timestamp.toString()) * 1000).toLocaleDateString()
+} 

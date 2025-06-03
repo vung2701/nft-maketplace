@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { Card, Row, Col, Button, Typography, Spin, Alert, Pagination } from 'antd';
-import { useListedNFTs, formatPrice, formatAddress, formatDate } from '../hooks/useGraphQL';
+import { useActiveListings, formatPrice, formatAddress, formatDate } from '../hooks/useGraphQL';
 
 const { Title, Text } = Typography;
 const { Meta } = Card;
 
-interface NFT {
+interface Listing {
   id: string;
+  seller: string;
+  nftAddress: string;
   tokenId: string;
-  creator: string;
-  owner: string;
-  tokenURI: string;
   price: string;
-  createdAt: string;
+  listedAt: string;
+  transactionHash: string;
 }
 
 const TheGraphNFTList: React.FC = () => {
@@ -20,19 +20,13 @@ const TheGraphNFTList: React.FC = () => {
   const pageSize = 12;
   const skip = (currentPage - 1) * pageSize;
 
-  const { loading, error, data, fetchMore } = useListedNFTs(pageSize, skip);
+  const { data, isLoading, isError, error, refetch } = useActiveListings(pageSize, skip);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchMore({
-      variables: {
-        first: pageSize,
-        skip: (page - 1) * pageSize
-      }
-    });
   };
 
-  if (loading && !data) return (
+  if (isLoading) return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <Spin size="large" />
       <div style={{ marginTop: 16 }}>
@@ -41,35 +35,17 @@ const TheGraphNFTList: React.FC = () => {
     </div>
   );
 
-  if (error) {
-    console.log('The Graph Error:', error.message);
-    const isServiceUnavailable = error.message.includes('502') || 
-                                error.message.includes('Bad gateway') || 
-                                error.message.includes('Server response was missing');
-    
-    if (isServiceUnavailable) {
-      console.log('The Graph Service Temporarily Unavailable - 502 Bad Gateway');
-    }
+  if (isError) {
+    console.log('The Graph Error:', error?.message);
     
     return (
       <Alert
         message="🛠️ Chức năng đang hoàn thiện"
-        description={
-          <div>
-            <Text>Chức năng đang được phát triển và hoàn thiện.</Text>
-            <br />
-            <Text strong>Vui lòng chờ đợi trong thời gian tới!</Text>
-            <br />
-            <br />
-            <Text type="secondary">
-              💡 Cảm ơn bạn đã kiên nhẫn chờ đợi.
-            </Text>
-          </div>
-        }
+        description="Chức năng đang được phát triển và hoàn thiện. Vui lòng chờ đợi!"
         type="warning"
         showIcon
         action={
-          <Button onClick={() => window.location.reload()}>
+          <Button onClick={() => refetch()}>
             Thử lại
           </Button>
         }
@@ -77,7 +53,7 @@ const TheGraphNFTList: React.FC = () => {
     );
   }
 
-  const nfts: NFT[] = data?.nfts || [];
+  const listings: Listing[] = (data as { listings: Listing[] })?.listings || [];
 
   return (
     <div style={{ padding: '20px' }}>
@@ -86,10 +62,10 @@ const TheGraphNFTList: React.FC = () => {
       </Title>
       
       <Text type="secondary" style={{ display: 'block', marginBottom: '20px' }}>
-        Dữ liệu được truy vấn real-time từ The Graph. Tổng cộng {nfts.length} NFT đang được bán.
+        Dữ liệu được truy vấn real-time từ The Graph. Tổng cộng {listings.length} NFT đang được bán.
       </Text>
 
-      {nfts.length === 0 ? (
+      {listings.length === 0 ? (
         <Alert
           message="Chưa có NFT nào"
           description="Chưa có NFT nào được list để bán hoặc subgraph chưa được deploy."
@@ -99,25 +75,13 @@ const TheGraphNFTList: React.FC = () => {
       ) : (
         <>
           <Row gutter={[16, 16]}>
-            {nfts.map((nft) => (
-              <Col key={nft.id} xs={24} sm={12} md={8} lg={6}>
+            {listings.map((listing) => (
+              <Col key={listing.id} xs={24} sm={12} md={8} lg={6}>
                 <Card
                   hoverable
                   cover={
-                    <div style={{ height: 200, overflow: 'hidden' }}>
-                      <img
-                        alt={`NFT ${nft.tokenId}`}
-                        src={nft.tokenURI}
-                        style={{ 
-                          width: '100%', 
-                          height: '100%', 
-                          objectFit: 'cover' 
-                        }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-nft.png';
-                        }}
-                      />
+                    <div style={{ height: 200, overflow: 'hidden', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text type="secondary">NFT #{listing.tokenId}</Text>
                     </div>
                   }
                   actions={[
@@ -127,19 +91,19 @@ const TheGraphNFTList: React.FC = () => {
                   ]}
                 >
                   <Meta
-                    title={`NFT #${nft.tokenId}`}
+                    title={`NFT #${listing.tokenId}`}
                     description={
                       <div>
                         <Text strong style={{ color: '#1890ff', fontSize: '16px' }}>
-                          {formatPrice(nft.price).toFixed(4)} ETH
+                          {formatPrice(listing.price).toFixed(4)} ETH
                         </Text>
                         <br />
                         <Text type="secondary">
-                          Owner: {formatAddress(nft.owner)}
+                          Seller: {formatAddress(listing.seller)}
                         </Text>
                         <br />
                         <Text type="secondary">
-                          Created: {formatDate(nft.createdAt)}
+                          Listed: {formatDate(listing.listedAt)}
                         </Text>
                       </div>
                     }
@@ -153,7 +117,7 @@ const TheGraphNFTList: React.FC = () => {
             <Pagination
               current={currentPage}
               pageSize={pageSize}
-              total={nfts.length + (nfts.length === pageSize ? pageSize : 0)}
+              total={listings.length + (listings.length === pageSize ? pageSize : 0)}
               onChange={handlePageChange}
               showSizeChanger={false}
             />
