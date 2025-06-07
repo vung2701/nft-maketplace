@@ -5,10 +5,19 @@ import {
 	GET_ACTIVE_LISTINGS,
 	GET_PURCHASE_HISTORY,
 	GET_MARKETPLACE_STATS,
+
 	formatPrice,
+	formatPriceShort,
 	formatAddress,
-	formatDate
+	formatDate,
+	formatDateTime,
+	formatTimeAgo,
+	formatVolume
 } from '../services/graphqlClient'
+
+// ===================================
+// 📋 CORE HOOKS FOR SUBGRAPH
+// ===================================
 
 // Hook lấy listings đang active
 export const useActiveListings = (first: number = 12, skip: number = 0) => {
@@ -22,8 +31,9 @@ export const useActiveListings = (first: number = 12, skip: number = 0) => {
 				throw new Error('The Graph connection error - feature in development')
 			}
 		},
-		staleTime: 60 * 1000,
-		retry: 1
+		staleTime: 30 * 1000, // 30 seconds
+		retry: 2,
+		refetchOnWindowFocus: false
 	})
 }
 
@@ -39,8 +49,9 @@ export const usePurchaseHistory = (first: number = 20) => {
 				throw new Error('The Graph connection error - feature in development')
 			}
 		},
-		staleTime: 60 * 1000,
-		retry: 1
+		staleTime: 60 * 1000, // 1 minute
+		retry: 2,
+		refetchOnWindowFocus: false
 	})
 }
 
@@ -56,14 +67,31 @@ export const useMarketplaceStats = () => {
 				throw new Error('The Graph connection error - feature in development')
 			}
 		},
-		staleTime: 5 * 60 * 1000, // 5 minutes for stats
-		retry: 1
+		staleTime: 2 * 60 * 1000, // 2 minutes
+		retry: 2,
+		refetchOnWindowFocus: true
 	})
 }
 
-// Backward compatibility
+
+
+// ===================================
+// 🔄 BACKWARD COMPATIBILITY
+// ===================================
+
+// Backward compatibility hooks
 export const useListedNFTs = useActiveListings
 export const useSalesHistory = usePurchaseHistory
 
-// Export utility functions
-export { formatPrice, formatAddress, formatDate } 
+// ===================================
+// 🛠️ UTILITY EXPORTS
+// ===================================
+
+// Export utility functions for easy import
+export {
+	formatPrice,
+	formatAddress,
+	formatDate,
+	formatVolume,
+	formatTimeAgo
+} 

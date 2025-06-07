@@ -7,7 +7,12 @@ const { Meta } = Card;
 
 interface Listing {
   id: string;
-  seller: string;
+  seller: {
+    id: string;
+    address: string;
+    totalListings: string;
+    totalSales: string;
+  } | string;
   nftAddress: string;
   tokenId: string;
   price: string;
@@ -95,11 +100,11 @@ const TheGraphNFTList: React.FC = () => {
                     description={
                       <div>
                         <Text strong style={{ color: '#1890ff', fontSize: '16px' }}>
-                          {formatPrice(listing.price).toFixed(4)} ETH
+                          {formatPrice(listing.price)} ETH
                         </Text>
                         <br />
                         <Text type="secondary">
-                          Seller: {formatAddress(listing.seller)}
+                          Seller: {formatAddress(typeof listing.seller === 'object' ? listing.seller.address : listing.seller)}
                         </Text>
                         <br />
                         <Text type="secondary">

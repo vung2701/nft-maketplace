@@ -40,70 +40,64 @@ const TheGraphDemo: React.FC = () => {
         <div style={{ padding: '20px' }}>
           <Title level={3}>🚀 The Graph Integration</Title>
 
-          <Title level={4}>Tính năng đã tích hợp:</Title>
+          <Alert
+            message="✅ Subgraph đã được cập nhật thành công!"
+            description="Frontend đã được đồng bộ với schema mới của subgraph"
+            type="success"
+            showIcon
+            style={{ marginBottom: '20px' }}
+          />
+
+          <Title level={4}>🎯 Chức năng chính:</Title>
           <ul>
             <li>
-              <Text strong>Real-time data:</Text> Dữ liệu NFT được cập nhật tự động từ blockchain
+              <Text strong>NFT Listings:</Text> Hiển thị danh sách NFT đang được bán
             </li>
             <li>
-              <Text strong>Hiệu suất cao:</Text> Truy vấn nhanh mà không cần quét blockchain
+              <Text strong>Marketplace Stats:</Text> Thống kê tổng quan marketplace
             </li>
             <li>
-              <Text strong>GraphQL API:</Text> Query linh hoạt với Apollo Client
+              <Text strong>Real-time data:</Text> Dữ liệu cập nhật tự động từ blockchain
             </li>
             <li>
-              <Text strong>Pagination:</Text> Hỗ trợ phân trang cho danh sách lớn
-            </li>
-            <li>
-              <Text strong>Thống kê:</Text> Tính toán metrics marketplace real-time
+              <Text strong>Purchase History:</Text> Lịch sử giao dịch mua bán
             </li>
           </ul>
 
-          <Title level={4}>Components đã tạo:</Title>
+          <Title level={4}>📊 Entities trong subgraph:</Title>
           <ul>
             <li>
-              <Text code>TheGraphNFTList</Text> - Hiển thị danh sách NFT
+              <Text code>Listing</Text> - Thông tin NFT listing
             </li>
             <li>
-              <Text code>MarketplaceStats</Text> - Thống kê marketplace
+              <Text code>Purchase</Text> - Giao dịch mua bán
             </li>
             <li>
-              <Text code>useGraphQL hooks</Text> - Custom hooks để query dữ liệu
+              <Text code>User</Text> - Thống kê user
             </li>
             <li>
-              <Text code>Apollo Client</Text> - Setup GraphQL client
+              <Text code>Collection</Text> - Thống kê collection
+            </li>
+            <li>
+              <Text code>MarketplaceStat</Text> - Thống kê tổng quan
             </li>
           </ul>
 
-          <Title level={4}>Cách sử dụng:</Title>
+          <Title level={4}>🔧 Cách sử dụng:</Title>
           <Paragraph>
             <Text code>
-              import &#123; useListedNFTs &#125; from '../hooks/useGraphQL'
+              import &#123; useActiveListings, useMarketplaceStats &#125; from '../hooks/useGraphQL'
               <br />
-              const &#123; loading, error, data &#125; = useListedNFTs(12, 0)
+              const &#123; data, isLoading, error &#125; = useActiveListings(12, 0)
             </Text>
           </Paragraph>
 
-          <Title level={4}>Queries có sẵn:</Title>
+          <Title level={4}>📈 Metrics được tracking:</Title>
           <ul>
-            <li>
-              <Text code>GET_ALL_NFTS</Text> - Lấy tất cả NFT
-            </li>
-            <li>
-              <Text code>GET_LISTED_NFTS</Text> - NFT đang được bán
-            </li>
-            <li>
-              <Text code>GET_USER_NFTS</Text> - NFT của user
-            </li>
-            <li>
-              <Text code>GET_NFT_DETAIL</Text> - Chi tiết NFT
-            </li>
-            <li>
-              <Text code>GET_SALES_HISTORY</Text> - Lịch sử giao dịch
-            </li>
-            <li>
-              <Text code>GET_MARKETPLACE_STATS</Text> - Thống kê tổng quan
-            </li>
+            <li>Tổng số listings và active listings</li>
+            <li>Tổng volume và giá trung bình</li>
+            <li>Số lượng users và collections</li>
+            <li>Tỷ lệ bán thành công</li>
           </ul>
         </div>
       )
@@ -115,31 +109,28 @@ const TheGraphDemo: React.FC = () => {
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div style={{ textAlign: 'center' }}>
           <Title level={1}>
-            <DatabaseOutlined /> The Graph Integration Demo
+            <DatabaseOutlined /> The Graph NFT Marketplace
           </Title>
           <Paragraph style={{ fontSize: '16px', color: '#666' }}>
-            Tích hợp The Graph vào NFT Marketplace để truy vấn dữ liệu blockchain hiệu quả
+            Tích hợp The Graph để truy vấn dữ liệu NFT marketplace từ blockchain
           </Paragraph>
         </div>
 
-        {/* <Alert
-          message="⚠️ Subgraph đã được cấu hình"
+        <Alert
+          message="🎉 Schema mới đã được áp dụng thành công!"
           description={
             <div>
-              <Text strong>✅ URL subgraph đã được cập nhật thành công!</Text>
+              <Text strong>✅ Frontend đã được cập nhật với subgraph schema mới</Text>
               <br />
-              <Text>Nếu vẫn gặp lỗi kết nối, hãy đảm bảo:</Text>
+              <Text>📊 Marketplace Stats với metrics chi tiết từ blockchain</Text>
               <br />
-              • Smart contract đã emit đúng events (NFTMinted, NFTSold, Transfer)
-              <br />
-              • Subgraph đã sync hoàn tất trên The Graph Studio
-              <br />• Có dữ liệu NFT trong contract để hiển thị
+              <Text>🔄 Dữ liệu real-time từ The Graph subgraph</Text>
             </div>
           }
           type="success"
           showIcon
           style={{ marginBottom: '20px' }}
-        /> */}
+        />
 
         <Tabs defaultActiveKey="1" size="large" items={tabItems} />
       </Space>
@@ -148,3 +139,4 @@ const TheGraphDemo: React.FC = () => {
 };
 
 export default TheGraphDemo;
+

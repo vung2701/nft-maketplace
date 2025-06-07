@@ -1,30 +1,27 @@
-import React from 'react';
-import { Card, Row, Col, Statistic, Spin, Alert } from 'antd';
-import { ShoppingCartOutlined, PictureOutlined, DollarOutlined, TrophyOutlined, FireOutlined, BarChartOutlined } from '@ant-design/icons';
-import { useMarketplaceStats, formatPrice, formatDate } from '../hooks/useGraphQL';
-
-interface MarketplaceStat {
-  id: string;
-  totalListings: string;
-  totalSales: string;
-  totalVolume: string;
-  totalActiveListings: string;
-  averagePrice: string;
-  updatedAt: string;
-}
+import React from 'react'
+import { Card, Row, Col, Statistic, Spin, Alert } from 'antd'
+import { 
+  ShoppingCartOutlined, 
+  PictureOutlined, 
+  DollarOutlined, 
+  TrophyOutlined, 
+  FireOutlined,
+  UserOutlined
+} from '@ant-design/icons'
+import { useMarketplaceStats, formatVolume, formatTimeAgo } from '../hooks/useGraphQL'
 
 const MarketplaceStats: React.FC = () => {
-  const { data, isLoading, isError, error } = useMarketplaceStats();
+  const { data, isLoading, error } = useMarketplaceStats()
 
-  if (isLoading) return (
-    <div style={{ textAlign: 'center', padding: '50px' }}>
-      <Spin size="large" />
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+      </div>
+    )
+  }
 
-  if (isError) {
-    console.log('The Graph Marketplace Stats Error:', error?.message);
-
+  if (error) {
     return (
       <Alert
         message="🛠️ Chức năng thống kê đang hoàn thiện"
@@ -32,38 +29,28 @@ const MarketplaceStats: React.FC = () => {
         type="warning"
         showIcon
       />
-    );
+    )
   }
 
-  const marketplaceStats = (data as { marketplaceStats: MarketplaceStat[] })?.marketplaceStats;
+  const stats = (data as any)?.marketplaceStats?.[0]
   
-  // If no stats exist yet (subgraph hasn't indexed any data)
-  if (!marketplaceStats || marketplaceStats.length === 0) {
+  if (!stats) {
     return (
-      <div style={{ padding: '20px' }}>
-        <Alert
-          message="📊 Chưa có dữ liệu thống kê"
-          description="Marketplace chưa có hoạt động nào được ghi nhận. Hãy thử list hoặc mua NFT để xem thống kê!"
-          type="info"
-          showIcon
-        />
-      </div>
-    );
+      <Alert
+        message="📊 Chưa có dữ liệu thống kê"
+        description="Marketplace chưa có hoạt động nào được ghi nhận. Hãy thử list hoặc mua NFT để xem thống kê!"
+        type="info"
+        showIcon
+      />
+    )
   }
-
-  const stats = marketplaceStats[0];
 
   // Convert BigInt strings to numbers for display
-  const totalListings = parseInt(stats.totalListings);
-  const totalSales = parseInt(stats.totalSales);
-  const totalActiveListings = parseInt(stats.totalActiveListings);
-  const totalVolume = formatPrice(stats.totalVolume);
-  const averagePrice = formatPrice(stats.averagePrice);
-  const lastUpdated = formatDate(stats.updatedAt);
-
-  // Calculate derived stats
-  const soldListings = totalListings - totalActiveListings;
-  const salesRate = totalListings > 0 ? (soldListings / totalListings * 100).toFixed(1) : '0';
+  const totalListings = parseInt(stats.totalListings)
+  const totalSales = parseInt(stats.totalSales)
+  const totalActiveListings = parseInt(stats.totalActiveListings)
+  const totalUsers = parseInt(stats.totalUsers)
+  const totalCollections = parseInt(stats.totalCollections)
 
   return (
     <div style={{ padding: '20px' }}>
@@ -94,7 +81,7 @@ const MarketplaceStats: React.FC = () => {
           <Card>
             <Statistic
               title="Đã bán"
-              value={soldListings}
+              value={totalSales}
               prefix={<FireOutlined />}
               valueStyle={{ color: '#722ed1' }}
             />
@@ -104,9 +91,9 @@ const MarketplaceStats: React.FC = () => {
         <Col xs={24} sm={12} md={8} lg={6}>
           <Card>
             <Statistic
-              title="Tổng giao dịch"
-              value={totalSales}
-              prefix={<TrophyOutlined />}
+              title="Tổng Users"
+              value={totalUsers}
+              prefix={<UserOutlined />}
               valueStyle={{ color: '#cf1322' }}
             />
           </Card>
@@ -118,8 +105,7 @@ const MarketplaceStats: React.FC = () => {
           <Card>
             <Statistic
               title="Tổng volume"
-              value={totalVolume.toFixed(4)}
-              suffix="ETH"
+              value={formatVolume(stats.totalVolume)}
               prefix={<DollarOutlined />}
               valueStyle={{ color: '#fa8c16' }}
             />
@@ -130,9 +116,8 @@ const MarketplaceStats: React.FC = () => {
           <Card>
             <Statistic
               title="Giá trung bình"
-              value={averagePrice > 0 ? averagePrice.toFixed(4) : '0'}
-              suffix="ETH"
-              prefix={<BarChartOutlined />}
+              value={formatVolume(stats.averagePrice)}
+              prefix={<TrophyOutlined />}
               valueStyle={{ color: '#52c41a' }}
             />
           </Card>
@@ -142,8 +127,7 @@ const MarketplaceStats: React.FC = () => {
           <Card>
             <Statistic
               title="Tỷ lệ bán"
-              value={salesRate}
-              suffix="%"
+              value={totalListings > 0 ? `${((totalSales / totalListings) * 100).toFixed(1)}%` : '0%'}
               prefix={<FireOutlined />}
               valueStyle={{ color: '#eb2f96' }}
             />
@@ -155,13 +139,13 @@ const MarketplaceStats: React.FC = () => {
         <Col xs={24}>
           <Card>
             <div style={{ textAlign: 'center', color: '#8c8c8c' }}>
-              <small>Cập nhật lần cuối: {lastUpdated}</small>
+              <small>Cập nhật lần cuối: {formatTimeAgo(stats.updatedAt)}</small>
             </div>
           </Card>
         </Col>
       </Row>
     </div>
-  );
-};
+  )
+}
 
-export default MarketplaceStats;
+export default MarketplaceStats
