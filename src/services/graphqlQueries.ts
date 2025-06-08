@@ -1,218 +1,138 @@
 import { gql } from '@apollo/client'
 
 // ===================================
-// 📋 LISTING QUERIES
+// 📊 MARKETPLACE ANALYTICS QUERIES
 // ===================================
 
-// Lấy tất cả listings với thông tin đầy đủ
-export const GET_ALL_LISTINGS = gql`
-  query GetAllListings($first: Int!, $skip: Int!) {
-    listings(first: $first, skip: $skip, orderBy: listedAt, orderDirection: desc) {
-      id
-      listingId
-      seller {
-        id
-        address
-        totalListings
-        totalSales
-      }
-      nftAddress
-      tokenId
-      price
-      isSold
-      listedAt
-      soldAt
-      transactionHash
-      purchase {
-        id
-        buyer {
-          id
-          address
-        }
-        price
-        timestamp
-      }
+export const GET_MARKETPLACE_STATS = gql`
+  query GetMarketplaceStats {
+    marketplaceStat(id: "marketplace-stats") {
+      totalVolume
+      totalSales
+      totalListings
+      totalActiveListings
+      averagePrice
+      totalCollections
+      totalUsers
+      updatedAt
     }
   }
 `
 
-// Lấy listings đang active
-export const GET_ACTIVE_LISTINGS = gql`
-  query GetActiveListings($first: Int!, $skip: Int!) {
-    listings(first: $first, skip: $skip, where: { isSold: false }, orderBy: listedAt, orderDirection: desc) {
-      id
-      listingId
-      seller {
-        id
-        address
-        totalListings
-        totalSales
-      }
-      nftAddress
-      tokenId
-      price
-      isSold
-      listedAt
-      transactionHash
+export const GET_DAILY_VOLUME = gql`
+  query GetDailyVolume($days: Int!) {
+    marketplaceDayDatas(first: $days, orderBy: date, orderDirection: desc) {
+      date
+      dailyVolume
+      dailySales
+      dailyListings
+      dailyActiveUsers
+      avgSalePrice
+      volumeChange
+      salesChange
     }
   }
 `
 
-// Lấy listings của một user
-export const GET_USER_LISTINGS = gql`
-  query GetUserListings($seller: String!) {
-    listings(where: { seller: $seller }, orderBy: listedAt, orderDirection: desc) {
-      id
-      listingId
-      seller {
-        id
-        address
-      }
-      nftAddress
-      tokenId
-      price
-      isSold
-      listedAt
-      soldAt
-      transactionHash
-      purchase {
-        id
-        buyer {
-          id
-          address
-        }
-        price
-        timestamp
-      }
-    }
-  }
-`
-
-// Lấy chi tiết một listing
-export const GET_LISTING_DETAIL = gql`
-  query GetListingDetail($id: String!) {
-    listing(id: $id) {
-      id
-      listingId
-      seller {
-        id
-        address
-        totalListings
-        totalSales
-        totalVolumeAsSeller
-      }
-      nftAddress
-      tokenId
-      price
-      isSold
-      listedAt
-      soldAt
-      transactionHash
-      purchase {
-        id
-        buyer {
-          id
-          address
-          totalPurchases
-        }
-        seller {
-          id
-          address
-        }
-        price
-        timestamp
-        transactionHash
-      }
+export const GET_WEEKLY_VOLUME = gql`
+  query GetWeeklyVolume($weeks: Int!) {
+    marketplaceWeekDatas(first: $weeks, orderBy: week, orderDirection: desc) {
+      week
+      weeklyVolume
+      weeklySales
+      weeklyListings
+      weeklyActiveUsers
+      avgSalePrice
+      volumeChange
+      salesChange
     }
   }
 `
 
 // ===================================
-// 🛒 PURCHASE QUERIES
+// 🏆 COLLECTION ANALYTICS
 // ===================================
 
-// Lấy lịch sử mua bán (purchases) với thông tin đầy đủ
-export const GET_PURCHASE_HISTORY = gql`
-  query GetPurchaseHistory($first: Int!) {
-    purchases(first: $first, orderBy: timestamp, orderDirection: desc) {
+export const GET_TOP_COLLECTIONS = gql`
+  query GetTopCollections($limit: Int!) {
+    collections(first: $limit, orderBy: totalVolume, orderDirection: desc) {
       id
-      buyer {
-        id
-        address
-        totalPurchases
-      }
-      seller {
-        id
-        address
-        totalSales
-      }
-      nftAddress
-      tokenId
-      price
-      timestamp
-      transactionHash
-      listing {
-        id
-        listingId
-        listedAt
-      }
+      address
+      totalVolume
+      totalSales
+      totalListings
+      floorPrice
+      ceilingPrice
+      averagePrice
+      lastSalePrice
     }
   }
 `
 
-// Lấy purchases của một user (as buyer)
-export const GET_USER_PURCHASES = gql`
-  query GetUserPurchases($buyer: String!) {
-    purchases(where: { buyer: $buyer }, orderBy: timestamp, orderDirection: desc) {
-      id
-      buyer {
-        id
-        address
-      }
-      seller {
-        id
-        address
-      }
-      nftAddress
-      tokenId
-      price
-      timestamp
-      transactionHash
-      listing {
-        id
-        listingId
-      }
+export const GET_COLLECTION_DAILY_DATA = gql`
+  query GetCollectionDailyData($collection: String!, $days: Int!) {
+    collectionDayDatas(
+      where: { collection: $collection }
+      first: $days
+      orderBy: date
+      orderDirection: desc
+    ) {
+      date
+      dailyVolume
+      dailySales
+      dailyListings
+      openPrice
+      closePrice
+      highPrice
+      lowPrice
+      avgSalePrice
     }
   }
 `
 
-// Lấy sales của một user (as seller)
-export const GET_USER_SALES = gql`
-  query GetUserSales($seller: String!) {
-    purchases(where: { seller: $seller }, orderBy: timestamp, orderDirection: desc) {
+export const GET_COLLECTION_WEEKLY_DATA = gql`
+  query GetCollectionWeeklyData($collection: String!, $weeks: Int!) {
+    collectionWeekDatas(
+      where: { collection: $collection }
+      first: $weeks
+      orderBy: week
+      orderDirection: desc
+    ) {
+      week
+      weeklyVolume
+      weeklySales
+      weeklyListings
+      openPrice
+      closePrice
+      highPrice
+      lowPrice
+      avgSalePrice
+      volumeChange
+      priceChange
+    }
+  }
+`
+
+export const GET_COLLECTION_DETAILS = gql`
+  query GetCollectionDetails($address: String!) {
+    collection(id: $address) {
       id
-      buyer {
-        id
-        address
-      }
-      seller {
-        id
-        address
-      }
-      nftAddress
-      tokenId
-      price
-      timestamp
-      transactionHash
+      address
+      totalVolume
+      totalSales
+      totalListings
+      floorPrice
+      ceilingPrice
+      averagePrice
+      lastSalePrice
     }
   }
 `
 
 // ===================================
-// 👤 USER QUERIES
+// 👤 USER ANALYTICS
 // ===================================
 
-// Lấy thông tin user đầy đủ
 export const GET_USER_STATS = gql`
   query GetUserStats($address: String!) {
     user(id: $address) {
@@ -229,10 +149,9 @@ export const GET_USER_STATS = gql`
   }
 `
 
-// Lấy top users theo volume (buyers)
-export const GET_TOP_BUYERS = gql`
-  query GetTopBuyers($first: Int!) {
-    users(first: $first, orderBy: totalVolumeAsBuyer, orderDirection: desc) {
+export const GET_TOP_USERS = gql`
+  query GetTopUsers($limit: Int!) {
+    users(first: $limit, orderBy: totalVolumeAsBuyer, orderDirection: desc) {
       id
       address
       totalListings
@@ -240,130 +159,21 @@ export const GET_TOP_BUYERS = gql`
       totalSales
       totalVolumeAsBuyer
       totalVolumeAsSeller
-      firstActivityAt
-      lastActivityAt
-    }
-  }
-`
-
-// Lấy top users theo volume (sellers)
-export const GET_TOP_SELLERS = gql`
-  query GetTopSellers($first: Int!) {
-    users(first: $first, orderBy: totalVolumeAsSeller, orderDirection: desc) {
-      id
-      address
-      totalListings
-      totalPurchases
-      totalSales
-      totalVolumeAsBuyer
-      totalVolumeAsSeller
-      firstActivityAt
-      lastActivityAt
     }
   }
 `
 
 // ===================================
-// 🎨 COLLECTION QUERIES
+// 📋 TRADING QUERIES
 // ===================================
 
-// Lấy tất cả collections
-export const GET_ALL_COLLECTIONS = gql`
-  query GetAllCollections($first: Int!, $skip: Int!) {
-    collections(first: $first, skip: $skip, orderBy: totalVolume, orderDirection: desc) {
-      id
-      address
-      totalListings
-      totalSales
-      totalVolume
-      floorPrice
-      lastSalePrice
-    }
-  }
-`
-
-// Lấy chi tiết một collection
-export const GET_COLLECTION_DETAIL = gql`
-  query GetCollectionDetail($address: String!) {
-    collection(id: $address) {
-      id
-      address
-      totalListings
-      totalSales
-      totalVolume
-      floorPrice
-      lastSalePrice
-    }
-  }
-`
-
-// Lấy top collections theo volume
-export const GET_TOP_COLLECTIONS = gql`
-  query GetTopCollections($first: Int!) {
-    collections(first: $first, orderBy: totalVolume, orderDirection: desc) {
-      id
-      address
-      totalListings
-      totalSales
-      totalVolume
-      floorPrice
-      lastSalePrice
-    }
-  }
-`
-
-// ===================================
-// 📊 MARKETPLACE STATS QUERIES
-// ===================================
-
-// Lấy thống kê marketplace từ MarketplaceStat entity
-export const GET_MARKETPLACE_STATS = gql`
-  query GetMarketplaceStats {
-    marketplaceStats(first: 1) {
-      id
-      totalListings
-      totalActiveListings
-      totalSales
-      totalVolume
-      averagePrice
-      totalCollections
-      totalUsers
-      updatedAt
-    }
-  }
-`
-
-// ===================================
-// 🔍 SEARCH & FILTER QUERIES
-// ===================================
-
-// Lấy listings theo NFT address và token ID
-export const GET_LISTINGS_BY_NFT = gql`
-  query GetListingsByNFT($nftAddress: String!, $tokenId: String!) {
-    listings(where: { nftAddress: $nftAddress, tokenId: $tokenId }, orderBy: listedAt, orderDirection: desc) {
-      id
-      listingId
-      seller {
-        id
-        address
-      }
-      price
-      isSold
-      listedAt
-      soldAt
-      transactionHash
-    }
-  }
-`
-
-// Lấy listings theo collection (NFT address)
-export const GET_LISTINGS_BY_COLLECTION = gql`
-  query GetListingsByCollection($nftAddress: String!, $first: Int!, $skip: Int!) {
+export const GET_ACTIVE_LISTINGS = gql`
+  query GetActiveListings($first: Int!, $skip: Int!) {
     listings(
-      where: { nftAddress: $nftAddress, isSold: false }, 
-      first: $first, 
-      skip: $skip, 
-      orderBy: listedAt, 
+      first: $first
+      skip: $skip
+      where: { isSold: false }
+      orderBy: listedAt
       orderDirection: desc
     ) {
       id
@@ -371,6 +181,8 @@ export const GET_LISTINGS_BY_COLLECTION = gql`
       seller {
         id
         address
+        totalListings
+        totalSales
       }
       nftAddress
       tokenId
@@ -381,24 +193,9 @@ export const GET_LISTINGS_BY_COLLECTION = gql`
   }
 `
 
-// Lấy activity gần đây (listings + purchases)
-export const GET_RECENT_ACTIVITY = gql`
-  query GetRecentActivity($first: Int!) {
-    listings(first: $first, orderBy: listedAt, orderDirection: desc) {
-      id
-      listingId
-      seller {
-        id
-        address
-      }
-      nftAddress
-      tokenId
-      price
-      isSold
-      listedAt
-      transactionHash
-    }
-    purchases(first: $first, orderBy: timestamp, orderDirection: desc) {
+export const GET_RECENT_SALES = gql`
+  query GetRecentSales($limit: Int!) {
+    purchases(first: $limit, orderBy: timestamp, orderDirection: desc) {
       id
       buyer {
         id
@@ -413,6 +210,92 @@ export const GET_RECENT_ACTIVITY = gql`
       price
       timestamp
       transactionHash
+    }
+  }
+`
+
+export const GET_USER_LISTINGS = gql`
+  query GetUserListings($seller: String!) {
+    listings(
+      where: { seller: $seller }
+      orderBy: listedAt
+      orderDirection: desc
+    ) {
+      id
+      listingId
+      nftAddress
+      tokenId
+      price
+      isSold
+      listedAt
+      soldAt
+      transactionHash
+    }
+  }
+`
+
+export const GET_USER_PURCHASES = gql`
+  query GetUserPurchases($buyer: String!) {
+    purchases(
+      where: { buyer: $buyer }
+      orderBy: timestamp
+      orderDirection: desc
+    ) {
+      id
+      nftAddress
+      tokenId
+      price
+      timestamp
+      transactionHash
+      seller {
+        id
+        address
+      }
+    }
+  }
+`
+
+export const GET_USER_SALES = gql`
+  query GetUserSales($seller: String!) {
+    purchases(
+      where: { seller: $seller }
+      orderBy: timestamp
+      orderDirection: desc
+    ) {
+      id
+      nftAddress
+      tokenId
+      price
+      timestamp
+      transactionHash
+      buyer {
+        id
+        address
+      }
+    }
+  }
+`
+
+// ===================================
+// 🔍 ADVANCED ANALYTICS
+// ===================================
+
+export const GET_PRICE_OHLC = gql`
+  query GetPriceOHLC($collection: String!, $days: Int!) {
+    collectionDayDatas(
+      where: { collection: $collection }
+      first: $days
+      orderBy: date
+      orderDirection: asc
+    ) {
+      date
+      openPrice
+      highPrice
+      lowPrice
+      closePrice
+      dailyVolume
+      dailySales
+      avgSalePrice
     }
   }
 ` 
