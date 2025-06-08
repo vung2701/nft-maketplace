@@ -48,6 +48,10 @@ const App: React.FC = () => {
             {
               key: 'the-graph',
               label: <Link to={ROUTES.THE_GRAPH}>The Graph</Link>
+            },
+            {
+              key: 'moralis',
+              label: <Link to={ROUTES.MORALIS}>Moralis Demo</Link>
             }
           ]}
         />
@@ -63,7 +67,7 @@ const App: React.FC = () => {
             <Route path={ROUTES.HOME} element={<Home />} />
             <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
             <Route path={ROUTES.THE_GRAPH} element={<TheGraphDemo />} />
-            {/* <Route path={ROUTES.MORALIS} element={<MoralisDemo />} /> */}
+            <Route path={ROUTES.MORALIS} element={<MoralisDemo />} />
           </Routes>
         </div>
       </Content>

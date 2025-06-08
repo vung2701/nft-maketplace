@@ -1,313 +1,263 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useAccount } from 'wagmi'
-import {
-	getUserNFTs,
-	getNFTMetadata,
-	getContractNFTs,
-	getNFTTransfers,
-	getWalletNFTCollections,
-	formatNFTForUI,
-	type MoralisNFT,
-	type NFTCollection
-} from '../services/moralis/nft'
-import { initializeMoralis, isMoralisReady, getMoralisConfig } from '../services/moralis/client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { moralisService } from '../services/moralisService';
+import type { ProcessedNFT, NFTCollection, NFTTransfer } from '../types/nft';
 
-// Hook để initialize Moralis
-export const useMoralisInit = () => {
-	const [isInitialized, setIsInitialized] = useState(false)
-	const [isLoading, setIsLoading] = useState(true)
-	const [error, setError] = useState<string | null>(null)
+// Query Keys
+export const MORALIS_QUERY_KEYS = {
+	USER_NFTS: (address: string, chainId?: number) => ['moralis', 'user-nfts', address, chainId],
+	NFT_DETAILS: (tokenAddress: string, tokenId: string, chainId: number) =>
+		['moralis', 'nft-details', tokenAddress, tokenId, chainId],
+	COLLECTION_METADATA: (tokenAddress: string, chainId: number) =>
+		['moralis', 'collection-metadata', tokenAddress, chainId],
+	COLLECTION_NFTS: (tokenAddress: string, chainId: number) =>
+		['moralis', 'collection-nfts', tokenAddress, chainId],
+	NFT_TRANSFERS: (tokenAddress: string, tokenId: string, chainId: number) =>
+		['moralis', 'nft-transfers', tokenAddress, tokenId, chainId],
+	COLLECTION_OWNERS: (tokenAddress: string, chainId: number) =>
+		['moralis', 'collection-owners', tokenAddress, chainId],
+};
 
-	useEffect(() => {
-		const initialize = async () => {
-			try {
-				setIsLoading(true)
-				const success = await initializeMoralis()
-				setIsInitialized(success)
+/**
+ * 🖼️ Hook để lấy NFTs của user
+ */
+export const useUserNFTs = (
+	address: string | undefined,
+	chainId?: number,
+	options?: {
+		enabled?: boolean;
+		refetchInterval?: number;
+	}
+) => {
+	return useQuery({
+		queryKey: MORALIS_QUERY_KEYS.USER_NFTS(address || '', chainId),
+		queryFn: async () => {
+			if (!address) throw new Error('Address is required');
+			return await moralisService.getUserNFTs(address, chainId);
+		},
+		enabled: !!address && (options?.enabled !== false),
+		refetchInterval: options?.refetchInterval || false,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		gcTime: 10 * 60 * 1000, // 10 minutes
+	});
+};
 
-				if (!success) {
-					setError('Failed to initialize Moralis. Check API key configuration.')
-				}
-			} catch (err) {
-				setError(err instanceof Error ? err.message : 'Unknown error occurred')
-				setIsInitialized(false)
-			} finally {
-				setIsLoading(false)
-			}
-		}
+/**
+ * 🎨 Hook để lấy chi tiết NFT
+ */
+export const useNFTDetails = (
+	tokenAddress: string | undefined,
+	tokenId: string | undefined,
+	chainId: number = 1,
+	options?: {
+		enabled?: boolean;
+	}
+) => {
+	return useQuery({
+		queryKey: MORALIS_QUERY_KEYS.NFT_DETAILS(tokenAddress || '', tokenId || '', chainId),
+		queryFn: async () => {
+			if (!tokenAddress || !tokenId) throw new Error('Token address and ID are required');
+			return await moralisService.getNFTDetails(tokenAddress, tokenId, chainId);
+		},
+		enabled: !!tokenAddress && !!tokenId && (options?.enabled !== false),
+		staleTime: 10 * 60 * 1000, // 10 minutes - NFT metadata không thay đổi thường xuyên
+		gcTime: 30 * 60 * 1000, // 30 minutes
+	});
+};
 
-		initialize()
-	}, [])
+/**
+ * 📚 Hook để lấy thông tin collection
+ */
+export const useCollectionMetadata = (
+	tokenAddress: string | undefined,
+	chainId: number = 1,
+	options?: {
+		enabled?: boolean;
+	}
+) => {
+	return useQuery({
+		queryKey: MORALIS_QUERY_KEYS.COLLECTION_METADATA(tokenAddress || '', chainId),
+		queryFn: async () => {
+			if (!tokenAddress) throw new Error('Token address is required');
+			return await moralisService.getCollectionMetadata(tokenAddress, chainId);
+		},
+		enabled: !!tokenAddress && (options?.enabled !== false),
+		staleTime: 15 * 60 * 1000, // 15 minutes
+		gcTime: 30 * 60 * 1000, // 30 minutes
+	});
+};
+
+/**
+ * 🔍 Hook để lấy NFTs trong collection
+ */
+export const useCollectionNFTs = (
+	tokenAddress: string | undefined,
+	chainId: number = 1,
+	options?: {
+		enabled?: boolean;
+		limit?: number;
+	}
+) => {
+	return useQuery({
+		queryKey: MORALIS_QUERY_KEYS.COLLECTION_NFTS(tokenAddress || '', chainId),
+		queryFn: async () => {
+			if (!tokenAddress) throw new Error('Token address is required');
+			return await moralisService.searchNFTsByCollection(
+				tokenAddress,
+				chainId,
+				undefined,
+				options?.limit || 20
+			);
+		},
+		enabled: !!tokenAddress && (options?.enabled !== false),
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		gcTime: 15 * 60 * 1000, // 15 minutes
+	});
+};
+
+/**
+ * 📈 Hook để lấy transfer history
+ */
+export const useNFTTransfers = (
+	tokenAddress: string | undefined,
+	tokenId: string | undefined,
+	chainId: number = 1,
+	options?: {
+		enabled?: boolean;
+		limit?: number;
+	}
+) => {
+	return useQuery({
+		queryKey: MORALIS_QUERY_KEYS.NFT_TRANSFERS(tokenAddress || '', tokenId || '', chainId),
+		queryFn: async () => {
+			if (!tokenAddress || !tokenId) throw new Error('Token address and ID are required');
+			return await moralisService.getNFTTransfers(
+				tokenAddress,
+				tokenId,
+				chainId,
+				undefined,
+				options?.limit || 10
+			);
+		},
+		enabled: !!tokenAddress && !!tokenId && (options?.enabled !== false),
+		staleTime: 2 * 60 * 1000, // 2 minutes - transfer data cần update thường xuyên hơn
+		gcTime: 10 * 60 * 1000, // 10 minutes
+	});
+};
+
+/**
+ * 🏷️ Hook để lấy owners của collection
+ */
+export const useCollectionOwners = (
+	tokenAddress: string | undefined,
+	chainId: number = 1,
+	options?: {
+		enabled?: boolean;
+		limit?: number;
+	}
+) => {
+	return useQuery({
+		queryKey: MORALIS_QUERY_KEYS.COLLECTION_OWNERS(tokenAddress || '', chainId),
+		queryFn: async () => {
+			if (!tokenAddress) throw new Error('Token address is required');
+			return await moralisService.getCollectionOwners(
+				tokenAddress,
+				chainId,
+				undefined,
+				options?.limit || 20
+			);
+		},
+		enabled: !!tokenAddress && (options?.enabled !== false),
+		staleTime: 10 * 60 * 1000, // 10 minutes
+		gcTime: 20 * 60 * 1000, // 20 minutes
+	});
+};
+
+/**
+ * 🔄 Hook để resync NFT metadata
+ */
+export const useResyncNFTMetadata = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async ({
+			tokenAddress,
+			tokenId,
+			chainId
+		}: {
+			tokenAddress: string;
+			tokenId: string;
+			chainId: number;
+		}) => {
+			return await moralisService.resyncNFTMetadata(tokenAddress, tokenId, chainId);
+		},
+		onSuccess: (_, variables) => {
+			// Invalidate related queries sau khi resync
+			queryClient.invalidateQueries({
+				queryKey: MORALIS_QUERY_KEYS.NFT_DETAILS(variables.tokenAddress, variables.tokenId, variables.chainId)
+			});
+			queryClient.invalidateQueries({
+				queryKey: MORALIS_QUERY_KEYS.COLLECTION_NFTS(variables.tokenAddress, variables.chainId)
+			});
+		},
+	});
+};
+
+/**
+ * 🔄 Hook để refresh data real-time
+ */
+export const useRefreshNFTData = () => {
+	const queryClient = useQueryClient();
+
+	const refreshUserNFTs = (address: string, chainId?: number) => {
+		queryClient.invalidateQueries({
+			queryKey: MORALIS_QUERY_KEYS.USER_NFTS(address, chainId)
+		});
+	};
+
+	const refreshNFTDetails = (tokenAddress: string, tokenId: string, chainId: number) => {
+		queryClient.invalidateQueries({
+			queryKey: MORALIS_QUERY_KEYS.NFT_DETAILS(tokenAddress, tokenId, chainId)
+		});
+	};
+
+	const refreshCollectionData = (tokenAddress: string, chainId: number) => {
+		queryClient.invalidateQueries({
+			queryKey: MORALIS_QUERY_KEYS.COLLECTION_METADATA(tokenAddress, chainId)
+		});
+		queryClient.invalidateQueries({
+			queryKey: MORALIS_QUERY_KEYS.COLLECTION_NFTS(tokenAddress, chainId)
+		});
+	};
 
 	return {
-		isInitialized,
-		isLoading,
-		error,
-		config: getMoralisConfig(),
-		isReady: isMoralisReady()
-	}
-}
+		refreshUserNFTs,
+		refreshNFTDetails,
+		refreshCollectionData,
+	};
+};
 
-// Hook để lấy NFTs của user hiện tại
-export const useUserNFTs = (options: {
-	enabled?: boolean
-	limit?: number
-	chain?: string
-} = {}) => {
-	const { address } = useAccount()
-	const { enabled = true, limit = 10, chain = 'polygon' } = options
-
-	const [nfts, setNfts] = useState<MoralisNFT[]>([])
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
-	const [cursor, setCursor] = useState<string | undefined>()
-	const [hasMore, setHasMore] = useState(true)
-
-	const fetchNFTs = useCallback(async (loadMore = false) => {
-		if (!address || !enabled || !isMoralisReady()) return
-
-		try {
-			setLoading(true)
-			setError(null)
-
-			const result = await getUserNFTs(address, chain, {
-				limit,
-				cursor: loadMore ? cursor : undefined,
-				normalizeMetadata: true
-			})
-
-			if (result) {
-				const newNFTs = result.result || []
-				setNfts(prev => loadMore ? [...prev, ...newNFTs] : newNFTs)
-				setCursor(result.cursor)
-				setHasMore(!!result.cursor)
-			}
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to fetch NFTs')
-		} finally {
-			setLoading(false)
-		}
-	}, [address, enabled, chain, limit, cursor])
-
-	const loadMore = useCallback(() => {
-		if (!loading && hasMore) {
-			fetchNFTs(true)
-		}
-	}, [fetchNFTs, loading, hasMore])
-
-	const refresh = useCallback(() => {
-		setCursor(undefined)
-		setHasMore(true)
-		fetchNFTs(false)
-	}, [fetchNFTs])
-
-	useEffect(() => {
-		if (address && enabled) {
-			refresh()
-		}
-	}, [address, enabled, refresh])
-
-	// Format NFTs for UI
-	const formattedNFTs = nfts.map(formatNFTForUI)
+/**
+ * 🎯 Hook tổng hợp cho NFT marketplace
+ */
+export const useNFTMarketplace = (address?: string, chainId?: number) => {
+	const userNFTs = useUserNFTs(address, chainId);
+	const refreshData = useRefreshNFTData();
+	const resync = useResyncNFTMetadata();
 
 	return {
-		nfts: formattedNFTs,
-		loading,
-		error,
-		hasMore,
-		loadMore,
-		refresh,
-		total: nfts.length
-	}
-}
+		// Data
+		nfts: userNFTs.data?.nfts || [],
+		cursor: userNFTs.data?.cursor,
 
-// Hook để lấy NFT metadata cụ thể
-export const useNFTMetadata = (contractAddress?: string, tokenId?: string, chain = 'polygon') => {
-	const [nft, setNft] = useState<MoralisNFT | null>(null)
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
+		// States
+		isLoading: userNFTs.isLoading,
+		isError: userNFTs.isError,
+		error: userNFTs.error,
 
-	const fetchMetadata = useCallback(async () => {
-		if (!contractAddress || !tokenId || !isMoralisReady()) return
-
-		try {
-			setLoading(true)
-			setError(null)
-
-			const result = await getNFTMetadata(contractAddress, tokenId, chain, {
-				normalizeMetadata: true,
-				mediaItems: true
-			})
-
-			setNft(result)
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to fetch NFT metadata')
-		} finally {
-			setLoading(false)
-		}
-	}, [contractAddress, tokenId, chain])
-
-	useEffect(() => {
-		if (contractAddress && tokenId) {
-			fetchMetadata()
-		}
-	}, [fetchMetadata])
-
-	return {
-		nft: nft ? formatNFTForUI(nft) : null,
-		loading,
-		error,
-		refresh: fetchMetadata
-	}
-}
-
-// Hook để lấy NFTs từ contract cụ thể
-export const useContractNFTs = (contractAddress?: string, options: {
-	enabled?: boolean
-	limit?: number
-	chain?: string
-} = {}) => {
-	const { enabled = true, limit = 10, chain = 'polygon' } = options
-
-	const [nfts, setNfts] = useState<MoralisNFT[]>([])
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
-	const [cursor, setCursor] = useState<string | undefined>()
-	const [hasMore, setHasMore] = useState(true)
-
-	const fetchNFTs = useCallback(async (loadMore = false) => {
-		if (!contractAddress || !enabled || !isMoralisReady()) return
-
-		try {
-			setLoading(true)
-			setError(null)
-
-			const result = await getContractNFTs(contractAddress, chain, {
-				limit,
-				cursor: loadMore ? cursor : undefined,
-				normalizeMetadata: true
-			})
-
-			if (result) {
-				const newNFTs = result.result || []
-				setNfts(prev => loadMore ? [...prev, ...newNFTs] : newNFTs)
-				setCursor(result.cursor)
-				setHasMore(!!result.cursor)
-			}
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to fetch contract NFTs')
-		} finally {
-			setLoading(false)
-		}
-	}, [contractAddress, enabled, chain, limit, cursor])
-
-	const loadMore = useCallback(() => {
-		if (!loading && hasMore) {
-			fetchNFTs(true)
-		}
-	}, [fetchNFTs, loading, hasMore])
-
-	const refresh = useCallback(() => {
-		setCursor(undefined)
-		setHasMore(true)
-		fetchNFTs(false)
-	}, [fetchNFTs])
-
-	useEffect(() => {
-		if (contractAddress && enabled) {
-			refresh()
-		}
-	}, [contractAddress, enabled, refresh])
-
-	const formattedNFTs = nfts.map(formatNFTForUI)
-
-	return {
-		nfts: formattedNFTs,
-		loading,
-		error,
-		hasMore,
-		loadMore,
-		refresh,
-		total: nfts.length
-	}
-}
-
-// Hook để lấy lịch sử transfer của NFT
-export const useNFTTransfers = (contractAddress?: string, tokenId?: string, chain = 'polygon') => {
-	const [transfers, setTransfers] = useState<any[]>([])
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
-
-	const fetchTransfers = useCallback(async () => {
-		if (!contractAddress || !tokenId || !isMoralisReady()) return
-
-		try {
-			setLoading(true)
-			setError(null)
-
-			const result = await getNFTTransfers(contractAddress, tokenId, chain, {
-				limit: 20
-			})
-
-			if (result?.result) {
-				setTransfers(result.result)
-			}
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to fetch NFT transfers')
-		} finally {
-			setLoading(false)
-		}
-	}, [contractAddress, tokenId, chain])
-
-	useEffect(() => {
-		if (contractAddress && tokenId) {
-			fetchTransfers()
-		}
-	}, [fetchTransfers])
-
-	return {
-		transfers,
-		loading,
-		error,
-		refresh: fetchTransfers
-	}
-}
-
-// Hook để lấy wallet collections summary
-export const useWalletCollections = (walletAddress?: string, chain = 'polygon') => {
-	const [collections, setCollections] = useState<any[]>([])
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
-
-	const fetchCollections = useCallback(async () => {
-		if (!walletAddress || !isMoralisReady()) return
-
-		try {
-			setLoading(true)
-			setError(null)
-
-			const result = await getWalletNFTCollections(walletAddress, chain)
-
-			if (result?.result) {
-				setCollections(result.result)
-			}
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to fetch wallet collections')
-		} finally {
-			setLoading(false)
-		}
-	}, [walletAddress, chain])
-
-	useEffect(() => {
-		if (walletAddress) {
-			fetchCollections()
-		}
-	}, [fetchCollections])
-
-	return {
-		collections,
-		loading,
-		error,
-		refresh: fetchCollections
-	}
-} 
+		// Actions
+		refetch: userNFTs.refetch,
+		refreshData,
+		resyncMetadata: resync.mutate,
+		isResyncing: resync.isPending,
+	};
+}; 
