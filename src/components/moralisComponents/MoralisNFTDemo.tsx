@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Card, Button, Spin, Alert, Tag, Select } from 'antd';
 import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
-import { useUserNFTs, useResyncNFTMetadata } from '../hooks/useMoralis';
-import { useMoralisContext } from '../providers/MoralisProvider';
+import { useUserNFTs, useResyncNFTMetadata } from '../../hooks/useMoralis';
+import { useMoralisContext } from '../../providers/MoralisProvider';
 import { MoralisStatus } from './MoralisStatus';
 import { IPFSImage } from './IPFSImage';
-import { getChainName } from '../config/moralis';
+import { getChainName } from '../../config/moralis';
 
 const { Meta } = Card;
 
@@ -25,7 +25,7 @@ export const MoralisNFTDemo: React.FC = () => {
     { value: 11155111, label: '🔧 Sepolia Testnet' },
     { value: 1, label: '🔷 Ethereum Mainnet' },
     { value: 137, label: '🔮 Polygon' },
-    { value: 56, label: '🟡 BSC' },
+    { value: 56, label: '🟡 BSC' }
   ];
 
   // Show Moralis initialization status
@@ -100,12 +100,7 @@ export const MoralisNFTDemo: React.FC = () => {
       <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>🖼️ NFT Gallery - Powered by Moralis</h2>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <Select
-            value={selectedChain}
-            onChange={setSelectedChain}
-            style={{ width: 200 }}
-            options={supportedChains}
-          />
+          <Select value={selectedChain} onChange={setSelectedChain} style={{ width: 200 }} options={supportedChains} />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()} type="primary">
             Refresh
           </Button>
@@ -113,8 +108,8 @@ export const MoralisNFTDemo: React.FC = () => {
       </div>
 
       {nfts.length === 0 ? (
-        <Alert 
-          message="📭 Không có NFTs" 
+        <Alert
+          message="📭 Không có NFTs"
           description={
             <div>
               <p>Wallet này chưa có NFTs nào trên {getChainName(selectedChain)}.</p>
@@ -128,7 +123,7 @@ export const MoralisNFTDemo: React.FC = () => {
               )}
             </div>
           }
-          type="info" 
+          type="info"
         />
       ) : (
         <div
@@ -238,11 +233,18 @@ export const MoralisNFTDemo: React.FC = () => {
         </p>
         {nfts.length === 0 && selectedChain === 11155111 && (
           <div style={{ color: '#999', fontSize: '14px', marginTop: '10px' }}>
-            <p>🔧 <strong>Troubleshooting cho Sepolia:</strong></p>
+            <p>
+              🔧 <strong>Troubleshooting cho Sepolia:</strong>
+            </p>
             <ul style={{ textAlign: 'left', maxWidth: '500px', margin: '0 auto' }}>
               <li>Đảm bảo wallet connect đúng Sepolia network</li>
               <li>NFTs mới mint có thể mất 5-10 phút để hiển thị</li>
-              <li>Kiểm tra transaction đã confirm chưa trên <a href="https://sepolia.etherscan.io" target="_blank">Sepolia Etherscan</a></li>
+              <li>
+                Kiểm tra transaction đã confirm chưa trên{' '}
+                <a href="https://sepolia.etherscan.io" target="_blank">
+                  Sepolia Etherscan
+                </a>
+              </li>
               <li>Thử resync metadata bằng button "Resync" nếu NFT xuất hiện</li>
             </ul>
           </div>

@@ -1,24 +1,24 @@
-import React from 'react'
-import { Card, Row, Col, Statistic, Spin, Alert } from 'antd'
-import { 
-  ShoppingCartOutlined, 
-  PictureOutlined, 
-  DollarOutlined, 
-  TrophyOutlined, 
+import React from 'react';
+import { Card, Row, Col, Statistic, Spin, Alert } from 'antd';
+import {
+  ShoppingCartOutlined,
+  PictureOutlined,
+  DollarOutlined,
+  TrophyOutlined,
   FireOutlined,
   UserOutlined
-} from '@ant-design/icons'
-import { useMarketplaceStats, formatVolume, formatTimeAgo } from '../hooks/useGraphQL'
+} from '@ant-design/icons';
+import { useMarketplaceStats, formatVolume, formatTimeAgo } from '../../hooks/useGraphQL';
 
 const MarketplaceStats: React.FC = () => {
-  const { data, isLoading, error } = useMarketplaceStats()
+  const { data, isLoading, error } = useMarketplaceStats();
 
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
         <Spin size="large" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -29,11 +29,11 @@ const MarketplaceStats: React.FC = () => {
         type="warning"
         showIcon
       />
-    )
+    );
   }
 
-  const stats = (data as any)?.marketplaceStats?.[0]
-  
+  const stats = (data as any)?.marketplaceStats?.[0];
+
   if (!stats) {
     return (
       <Alert
@@ -42,15 +42,15 @@ const MarketplaceStats: React.FC = () => {
         type="info"
         showIcon
       />
-    )
+    );
   }
 
   // Convert BigInt strings to numbers for display
-  const totalListings = parseInt(stats.totalListings)
-  const totalSales = parseInt(stats.totalSales)
-  const totalActiveListings = parseInt(stats.totalActiveListings)
-  const totalUsers = parseInt(stats.totalUsers)
-  const totalCollections = parseInt(stats.totalCollections)
+  const totalListings = parseInt(stats.totalListings);
+  const totalSales = parseInt(stats.totalSales);
+  const totalActiveListings = parseInt(stats.totalActiveListings);
+  const totalUsers = parseInt(stats.totalUsers);
+  const totalCollections = parseInt(stats.totalCollections);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -79,12 +79,7 @@ const MarketplaceStats: React.FC = () => {
 
         <Col xs={24} sm={12} md={8} lg={6}>
           <Card>
-            <Statistic
-              title="Đã bán"
-              value={totalSales}
-              prefix={<FireOutlined />}
-              valueStyle={{ color: '#722ed1' }}
-            />
+            <Statistic title="Đã bán" value={totalSales} prefix={<FireOutlined />} valueStyle={{ color: '#722ed1' }} />
           </Card>
         </Col>
 
@@ -145,7 +140,7 @@ const MarketplaceStats: React.FC = () => {
         </Col>
       </Row>
     </div>
-  )
-}
+  );
+};
 
-export default MarketplaceStats
+export default MarketplaceStats;

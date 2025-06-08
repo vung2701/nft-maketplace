@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Button, Form, Input, Upload, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { uploadFileToIPFS, uploadMetadataToIPFS } from '../services/apiPinata';
-import { useNFTContract } from '../hooks/useNFTContract';
-import { MESSAGES, MINT_STEPS } from '../constants';
-import { LoadingOverlay } from './LoadingOverlay';
+import { uploadFileToIPFS, uploadMetadataToIPFS } from '../../services/apiPinata';
+import { useNFTContract } from '../../hooks/useNFTContract';
+import { MESSAGES, MINT_STEPS } from '../../constants';
+import { LoadingOverlay } from '../loading/LoadingOverlay';
 
 interface MintFormProps {
   onSuccess?: () => void;
@@ -68,26 +68,15 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
     <>
       {loading && <LoadingOverlay tip={currentStep} />}
       <Form form={form} layout="vertical" onFinish={handleFinish}>
-        <Form.Item 
-          label="Tên NFT" 
-          name="name" 
-          rules={[{ required: true, message: 'Nhập tên NFT' }]}
-        >
+        <Form.Item label="Tên NFT" name="name" rules={[{ required: true, message: 'Nhập tên NFT' }]}>
           <Input disabled={loading} />
         </Form.Item>
 
-        <Form.Item 
-          label="Mô tả" 
-          name="description" 
-          rules={[{ required: true, message: 'Nhập mô tả' }]}
-        >
+        <Form.Item label="Mô tả" name="description" rules={[{ required: true, message: 'Nhập mô tả' }]}>
           <Input.TextArea rows={3} disabled={loading} />
         </Form.Item>
 
-        <Form.Item 
-          label="Upload ảnh" 
-          rules={[{ required: true, message: 'Chọn ảnh' }]}
-        >
+        <Form.Item label="Upload ảnh" rules={[{ required: true, message: 'Chọn ảnh' }]}>
           <Upload
             beforeUpload={(file) => {
               setFile(file);
@@ -104,12 +93,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
           </Upload>
         </Form.Item>
 
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          loading={loading} 
-          disabled={!isConnected || loading}
-        >
+        <Button type="primary" htmlType="submit" loading={loading} disabled={!isConnected || loading}>
           Mint NFT
         </Button>
       </Form>

@@ -1,8 +1,7 @@
 import React from 'react';
 import { Tabs, Typography, Space, Alert } from 'antd';
 import { DatabaseOutlined, BarChartOutlined, ShopOutlined } from '@ant-design/icons';
-import TheGraphNFTList from '../components/TheGraphNFTList';
-import MarketplaceStats from '../components/MarketplaceStats';
+import MarketplaceStats from '../components/graphComponents/MarketplaceStats';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -12,16 +11,6 @@ const TheGraphDemo: React.FC = () => {
       key: '1',
       label: (
         <span>
-          <ShopOutlined />
-          NFT Marketplace
-        </span>
-      ),
-      children: <TheGraphNFTList />
-    },
-    {
-      key: '2',
-      label: (
-        <span>
           <BarChartOutlined />
           Thống kê
         </span>
@@ -29,7 +18,7 @@ const TheGraphDemo: React.FC = () => {
       children: <MarketplaceStats />
     },
     {
-      key: '3',
+      key: '2',
       label: (
         <span>
           <DatabaseOutlined />
@@ -139,4 +128,3 @@ const TheGraphDemo: React.FC = () => {
 };
 
 export default TheGraphDemo;
-

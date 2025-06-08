@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Row, Col, message, Divider, Tag } from 'antd';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useNavigate } from 'react-router-dom';
-import { MintForm } from '../components/MintForm';
 import { NFTCard } from '../components/NFTCard';
 import { NFTItem } from '../types';
 import { useNFTContract } from '../hooks/useNFTContract';
 import { ROUTES, MESSAGES, COLORS } from '../constants';
 import { shortenAddress, parseWei } from '../utils/web3';
-import { LoadingOverlay } from '../components/LoadingOverlay';
-import { ContentLoading } from '../components/ContentLoading';
+import { LoadingOverlay } from '../components/loading/LoadingOverlay';
+import { MintForm } from '../components/form/MintForm';
+import { ContentLoading } from '../components/loading/ContentLoading';
 
 export const Home: React.FC = () => {
   // State và hooks
@@ -67,18 +67,18 @@ export const Home: React.FC = () => {
       {pageLoading && <LoadingOverlay />}
       <div className="homePage">
         <h2>Trang chủ</h2>
-        
+
         <div className="connectButton">
           <ConnectButton />
         </div>
 
         <MintForm onSuccess={fetchUserNFTs} />
 
-        <Divider 
-          style={{ 
-            borderColor: COLORS.BORDER, 
-            margin: '30px 0', 
-            fontSize: 22 
+        <Divider
+          style={{
+            borderColor: COLORS.BORDER,
+            margin: '30px 0',
+            fontSize: 22
           }}
         >
           NFT của bạn (Chưa được list)

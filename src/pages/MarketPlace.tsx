@@ -6,8 +6,8 @@ import { NFTCard } from '../components/NFTCard';
 import { useNFTContract } from '../hooks/useNFTContract';
 import { MESSAGES, COLORS } from '../constants';
 import { parseWei } from '../utils/web3';
-import { LoadingOverlay } from '../components/LoadingOverlay';
-import { ContentLoading } from '../components/ContentLoading';
+import { LoadingOverlay } from '../components/loading/LoadingOverlay';
+import { ContentLoading } from '../components/loading/ContentLoading';
 
 const Marketplace: React.FC = () => {
   // State
@@ -36,7 +36,7 @@ const Marketplace: React.FC = () => {
   // Xử lý mua NFT
   const handleBuyNFT = async (nft: NFTItem) => {
     if (!nft.listingId || !nft.price) return;
-    
+
     try {
       setPageLoading(true);
       await buyNFT(nft.listingId, parseWei(nft.price));
@@ -63,11 +63,13 @@ const Marketplace: React.FC = () => {
     <>
       {pageLoading && <LoadingOverlay />}
       <div style={{ padding: 24 }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          marginBottom: 24 
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: 24
+          }}
+        >
           <h2>Marketplace</h2>
           <ConnectButton />
         </div>
@@ -76,11 +78,11 @@ const Marketplace: React.FC = () => {
           <ContentLoading height={400} tip="Đang tải danh sách NFT..." />
         ) : (
           <>
-            <Divider 
-              style={{ 
-                borderColor: COLORS.BORDER, 
-                margin: '30px 0', 
-                fontSize: 22 
+            <Divider
+              style={{
+                borderColor: COLORS.BORDER,
+                margin: '30px 0',
+                fontSize: 22
               }}
             >
               NFT của bạn (Đang bán)
@@ -94,11 +96,13 @@ const Marketplace: React.FC = () => {
                       nft={nft}
                       showStatus
                       customAction={
-                        <div style={{ 
-                          padding: '16px 0', 
-                          color: COLORS.SUCCESS, 
-                          fontWeight: 'bold' 
-                        }}>
+                        <div
+                          style={{
+                            padding: '16px 0',
+                            color: COLORS.SUCCESS,
+                            fontWeight: 'bold'
+                          }}
+                        >
                           ĐANG BÁN ({nft.price} ETH)
                         </div>
                       }
@@ -112,11 +116,11 @@ const Marketplace: React.FC = () => {
               )}
             </Row>
 
-            <Divider 
-              style={{ 
-                borderColor: COLORS.BORDER, 
-                margin: '30px 0', 
-                fontSize: 22 
+            <Divider
+              style={{
+                borderColor: COLORS.BORDER,
+                margin: '30px 0',
+                fontSize: 22
               }}
             >
               Cửa hàng NFT
@@ -126,10 +130,7 @@ const Marketplace: React.FC = () => {
               {otherListedNFTs.length > 0 ? (
                 otherListedNFTs.map((nft) => (
                   <Col key={nft.tokenId} xs={24} sm={12} md={8} lg={6}>
-                    <NFTCard 
-                      nft={nft} 
-                      onBuy={() => handleBuyNFT(nft)} 
-                    />
+                    <NFTCard nft={nft} onBuy={() => handleBuyNFT(nft)} />
                   </Col>
                 ))
               ) : (

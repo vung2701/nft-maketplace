@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, Card, Typography, Spin, Alert, Button, Tag } from 'antd';
 import { HistoryOutlined, ShoppingOutlined } from '@ant-design/icons';
-import { usePurchaseHistory, formatPrice, formatAddress, formatDate } from '../hooks/useGraphQL';
+import { usePurchaseHistory, formatPrice, formatAddress, formatDate } from '../../hooks/useGraphQL';
 
 const { Title, Text } = Typography;
 
@@ -23,9 +23,7 @@ const PurchaseHistory: React.FC = () => {
     {
       title: 'NFT',
       key: 'nft',
-      render: (record: Purchase) => (
-        <Text strong>#{record.tokenId}</Text>
-      ),
+      render: (record: Purchase) => <Text strong>#{record.tokenId}</Text>
     },
     {
       title: 'Giá',
@@ -35,31 +33,25 @@ const PurchaseHistory: React.FC = () => {
         <Text strong style={{ color: '#1890ff' }}>
           {formatPrice(price).toFixed(4)} ETH
         </Text>
-      ),
+      )
     },
     {
       title: 'Người mua',
       dataIndex: 'buyer',
       key: 'buyer',
-      render: (buyer: string) => (
-        <Tag color="green">{formatAddress(buyer)}</Tag>
-      ),
+      render: (buyer: string) => <Tag color="green">{formatAddress(buyer)}</Tag>
     },
     {
       title: 'Người bán',
       dataIndex: 'seller',
       key: 'seller',
-      render: (seller: string) => (
-        <Tag color="blue">{formatAddress(seller)}</Tag>
-      ),
+      render: (seller: string) => <Tag color="blue">{formatAddress(seller)}</Tag>
     },
     {
       title: 'Thời gian',
       dataIndex: 'timestamp',
       key: 'timestamp',
-      render: (timestamp: string) => (
-        <Text>{formatDate(timestamp)}</Text>
-      ),
+      render: (timestamp: string) => <Text>{formatDate(timestamp)}</Text>
     },
     {
       title: 'Giao dịch',
@@ -76,33 +68,30 @@ const PurchaseHistory: React.FC = () => {
           <HistoryOutlined />
           Xem
         </Button>
-      ),
-    },
+      )
+    }
   ];
 
-  if (isLoading) return (
-    <div style={{ textAlign: 'center', padding: '50px' }}>
-      <Spin size="large" />
-      <div style={{ marginTop: 16 }}>
-        <Text>Đang tải lịch sử giao dịch...</Text>
+  if (isLoading)
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+        <div style={{ marginTop: 16 }}>
+          <Text>Đang tải lịch sử giao dịch...</Text>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   if (isError) {
     console.log('The Graph Purchase History Error:', error?.message);
-    
+
     return (
       <Alert
         message="🛠️ Chức năng đang hoàn thiện"
         description="Chức năng lịch sử giao dịch đang được phát triển. Vui lòng chờ đợi!"
         type="warning"
         showIcon
-        action={
-          <Button onClick={() => refetch()}>
-            Thử lại
-          </Button>
-        }
+        action={<Button onClick={() => refetch()}>Thử lại</Button>}
       />
     );
   }
@@ -115,9 +104,7 @@ const PurchaseHistory: React.FC = () => {
         <Title level={3}>
           <ShoppingOutlined /> Lịch sử giao dịch
         </Title>
-        <Text type="secondary">
-          Theo dõi tất cả các giao dịch mua bán NFT trên marketplace
-        </Text>
+        <Text type="secondary">Theo dõi tất cả các giao dịch mua bán NFT trên marketplace</Text>
       </div>
 
       {purchases.length === 0 ? (
@@ -134,8 +121,7 @@ const PurchaseHistory: React.FC = () => {
           rowKey="id"
           pagination={{
             pageSize: 10,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} giao dịch`,
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} giao dịch`
           }}
         />
       )}
@@ -143,4 +129,4 @@ const PurchaseHistory: React.FC = () => {
   );
 };
 
-export default PurchaseHistory; 
+export default PurchaseHistory;

@@ -16,13 +16,7 @@ interface CardAction {
   content: React.ReactNode;
 }
 
-export const NFTCard: React.FC<NFTCardProps> = ({ 
-  nft, 
-  showStatus, 
-  customAction, 
-  onBuy, 
-  onList 
-}) => {
+export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction, onBuy, onList }) => {
   const [price, setPrice] = useState('');
 
   // Xử lý các actions của card
@@ -34,11 +28,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({
         key: 'buy',
         content: (
           <div style={{ padding: '0 16px 16px' }}>
-            <Button 
-              type="primary" 
-              onClick={onBuy} 
-              style={{ width: '100%' }}
-            >
+            <Button type="primary" onClick={onBuy} style={{ width: '100%' }}>
               Mua
             </Button>
           </div>
@@ -59,11 +49,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({
                 onPressEnter={() => onList(price)}
                 style={{ width: '100%' }}
               />
-              <Button 
-                type="primary" 
-                onClick={() => onList(price)} 
-                style={{ width: '100%' }}
-              >
+              <Button type="primary" onClick={() => onList(price)} style={{ width: '100%' }}>
                 List vào Marketplace
               </Button>
             </Space>
@@ -78,21 +64,18 @@ export const NFTCard: React.FC<NFTCardProps> = ({
   return (
     <Card
       cover={
-        <img 
-          alt={nft.name} 
-          src={nft.image} 
-          style={{ 
-            height: DEFAULT_VALUES.IMAGE_HEIGHT, 
-            objectFit: 'cover' 
-          }} 
+        <img
+          alt={nft.name}
+          src={nft.image}
+          style={{
+            height: DEFAULT_VALUES.IMAGE_HEIGHT,
+            objectFit: 'cover'
+          }}
         />
       }
-      actions={getCardActions().map(action => action.content)}
+      actions={getCardActions().map((action) => action.content)}
     >
-      <Card.Meta 
-        title={nft.name} 
-        description={nft.description} 
-      />
+      <Card.Meta title={nft.name} description={nft.description} />
       {showStatus && customAction}
     </Card>
   );
