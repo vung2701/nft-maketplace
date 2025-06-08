@@ -13,13 +13,25 @@ export const MORALIS_CONFIG = {
 		11155111 // Sepolia Testnet
 	],
 
-	// IPFS Gateway configurations
+	// IPFS Gateway configurations - prioritize Pinata
 	ipfsGateways: [
-		'https://ipfs.moralis.io:2053/ipfs/',
 		'https://gateway.pinata.cloud/ipfs/',
+		'https://ipfs.moralis.io:2053/ipfs/',
 		'https://ipfs.io/ipfs/',
-		'https://cloudflare-ipfs.com/ipfs/'
-	]
+		'https://cloudflare-ipfs.com/ipfs/',
+		'https://dweb.link/ipfs/',
+		'https://nftstorage.link/ipfs/'
+	],
+
+	// Pinata configuration
+	pinata: {
+		apiKey: import.meta.env.VITE_PINATA_API_KEY,
+		apiSecret: import.meta.env.VITE_PINATA_API_SECRET,
+		jwt: import.meta.env.VITE_PINATA_JWT,
+		// Fix: API endpoint vs Gateway endpoint
+		gateway: import.meta.env.VITE_PINATA_URL || 'https://gateway.pinata.cloud/ipfs/'
+			
+	}
 };
 
 // Initialize Moralis - Global singleton
@@ -95,23 +107,66 @@ export const getChainName = (chainId: number): string => {
 	return chainNames[chainId] || `Chain ${chainId}`;
 };
 
-// IPFS URL helper
+// IPFS URL helper với multiple fallbacks
 export const resolveIPFS = (url: string): string => {
 	if (!url) return '';
 
 	// Nếu đã là HTTP URL thì return nguyên
 	if (url.startsWith('http')) return url;
 
+	let hash = '';
+
 	// Xử lý IPFS URLs
 	if (url.startsWith('ipfs://')) {
-		const hash = url.replace('ipfs://', '');
-		return `${MORALIS_CONFIG.ipfsGateways[0]}${hash}`;
+		hash = url.replace('ipfs://', '');
 	}
-
 	// Nếu chỉ là hash
-	if (url.match(/^Qm[1-9A-HJ-NP-Za-km-z]{44}$/)) {
-		return `${MORALIS_CONFIG.ipfsGateways[0]}${url}`;
+	else if (url.match(/^Qm[1-9A-HJ-NP-Za-km-z]{44}/) || url.match(/^ba[a-z2-7]{56}/)) {
+		hash = url;
+	}
+	// Xử lý /ipfs/ paths
+	else if (url.includes('/ipfs/')) {
+		hash = url.split('/ipfs/')[1];
+	}
+	else {
+		return url;
 	}
 
-	return url;
+	// Sử dụng Pinata gateway ưu tiên và đảm bảo format đúng
+	const gateway = MORALIS_CONFIG.pinata.gateway || MORALIS_CONFIG.ipfsGateways[0];
+	const cleanGateway = gateway.endsWith('/') ? gateway : gateway + '/';
+	const finalUrl = `${cleanGateway}${hash}`;
+
+	console.log('🔗 IPFS URL Resolution:', {
+		original: url,
+		hash,
+		gateway: cleanGateway,
+		final: finalUrl
+	});
+
+	return finalUrl;
+};
+
+// Helper để tạo multiple fallback URLs cho images
+export const getIPFSFallbacks = (url: string): string[] => {
+	if (!url || url.startsWith('http')) return [url];
+
+	let hash = '';
+	if (url.startsWith('ipfs://')) {
+		hash = url.replace('ipfs://', '');
+	} else if (url.match(/^Qm[1-9A-HJ-NP-Za-km-z]{44}/) || url.match(/^ba[a-z2-7]{56}/)) {
+		hash = url;
+	} else if (url.includes('/ipfs/')) {
+		hash = url.split('/ipfs/')[1];
+	} else {
+		return [url];
+	}
+
+	// Tạo URLs và remove duplicates
+	const urls = MORALIS_CONFIG.ipfsGateways.map(gateway => {
+		const cleanGateway = gateway.endsWith('/') ? gateway : gateway + '/';
+		return `${cleanGateway}${hash}`;
+	});
+
+	return [...new Set(urls)]; // Remove duplicates
 }; 

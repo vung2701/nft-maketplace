@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { Card, Button, Spin, Alert, Tag, Image, Select } from 'antd';
+import { Card, Button, Spin, Alert, Tag, Select } from 'antd';
 import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { useUserNFTs, useResyncNFTMetadata } from '../hooks/useMoralis';
 import { useMoralisContext } from '../providers/MoralisProvider';
 import { MoralisStatus } from './MoralisStatus';
+import { IPFSImage } from './IPFSImage';
 import { getChainName } from '../config/moralis';
 
 const { Meta } = Card;
@@ -137,18 +138,18 @@ export const MoralisNFTDemo: React.FC = () => {
             gap: '20px'
           }}
         >
-          {nfts.map((nft) => (
+          {nfts.map((nft, index) => (
             <Card
-              key={`${nft.tokenAddress}-${nft.tokenId}`}
+              key={`${nft.tokenAddress || 'unknown'}-${nft.tokenId || index}`}
               hoverable
               style={{ width: '100%' }}
               cover={
                 nft.image && (
-                  <Image
+                  <IPFSImage
                     alt={nft.name}
                     src={nft.image}
                     style={{ height: 200, objectFit: 'cover' }}
-                    fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+                    preview={false}
                   />
                 )
               }
