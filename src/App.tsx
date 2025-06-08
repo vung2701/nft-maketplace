@@ -49,10 +49,6 @@ const App: React.FC = () => {
               key: 'the-graph',
               label: <Link to={ROUTES.THE_GRAPH}>The Graph</Link>
             }
-            // {
-            //   key: 'moralis',
-            //   label: <Link to={ROUTES.MORALIS}>Moralis</Link>
-            // }
           ]}
         />
       </Header>

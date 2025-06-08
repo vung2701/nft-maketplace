@@ -5,7 +5,6 @@ import './index.css';
 import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MoralisProvider } from './components/MoralisProvider';
 import { config } from './wagmiConfig';
 import '@rainbow-me/rainbowkit/styles.css';
 import './styles/global.css';
@@ -24,13 +23,11 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      {/* <MoralisProvider> */}
       <WagmiProvider config={config}>
         <RainbowKitProvider>
           <App />
         </RainbowKitProvider>
       </WagmiProvider>
-      {/* </MoralisProvider> */}
     </QueryClientProvider>
   </React.StrictMode>
 );
