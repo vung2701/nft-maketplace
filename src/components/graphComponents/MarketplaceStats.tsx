@@ -132,9 +132,14 @@ const MarketplaceStats: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
         <Col xs={24}>
-          <Card>
-            <div style={{ textAlign: 'center', color: '#8c8c8c' }}>
-              <small>Cập nhật lần cuối: {formatTimeAgo(stats.updatedAt)}</small>
+          <Card style={{ backgroundColor: '#f6ffed', border: '1px solid #b7eb8f' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ color: '#52c41a', fontWeight: 'bold', marginBottom: '4px' }}>
+                📡 Dữ liệu thời gian thực từ The Graph
+              </div>
+              <div style={{ color: '#8c8c8c', fontSize: '12px' }}>
+                Cập nhật lần cuối: {formatTimeAgo(stats.updatedAt)} • Auto-refresh mỗi 2 phút
+              </div>
             </div>
           </Card>
         </Col>

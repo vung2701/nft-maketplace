@@ -3,14 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { Layout, Menu } from 'antd';
 import { Home } from './pages/Home';
 import Marketplace from './pages/MarketPlace';
-import TheGraphDemo from './pages/TheGraphDemo';
 import MoralisDemo from './pages/MoralisDemo';
 import { ROUTES, DEFAULT_VALUES } from './constants';
 import './styles/global.css';
+import Dashboard from './pages/Dashboard';
 
 const { Header, Content } = Layout;
 
-const App: React.FC = () => {
+const App = () => {
   const location = useLocation();
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
@@ -21,8 +21,8 @@ const App: React.FC = () => {
         ? 'home'
         : path === ROUTES.MARKETPLACE
         ? 'marketplace'
-        : path === ROUTES.THE_GRAPH
-        ? 'the-graph'
+        : path === ROUTES.DASHBOARD
+        ? 'dashboard'
         : path === ROUTES.MORALIS
         ? 'moralis'
         : ''
@@ -47,7 +47,7 @@ const App: React.FC = () => {
             },
             {
               key: 'the-graph',
-              label: <Link to={ROUTES.THE_GRAPH}>The Graph</Link>
+              label: <Link to={ROUTES.DASHBOARD}>Dashboard</Link>
             },
             {
               key: 'moralis',
@@ -66,7 +66,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path={ROUTES.HOME} element={<Home />} />
             <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
-            <Route path={ROUTES.THE_GRAPH} element={<TheGraphDemo />} />
+            <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
             <Route path={ROUTES.MORALIS} element={<MoralisDemo />} />
           </Routes>
         </div>
@@ -75,7 +75,7 @@ const App: React.FC = () => {
   );
 };
 
-const AppWrapper: React.FC = () => {
+const AppWrapper = () => {
   return (
     <Router>
       <App />

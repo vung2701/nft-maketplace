@@ -5,6 +5,7 @@ import {
 	GET_ACTIVE_LISTINGS,
 	GET_PURCHASE_HISTORY,
 	GET_MARKETPLACE_STATS,
+	GET_TOP_USERS,
 
 	formatPrice,
 	formatPriceShort,
@@ -70,6 +71,24 @@ export const useMarketplaceStats = () => {
 		staleTime: 2 * 60 * 1000, // 2 minutes
 		retry: 2,
 		refetchOnWindowFocus: true
+	})
+}
+
+// Hook lấy top users
+export const useTopUsers = (first: number = 50) => {
+	return useQuery({
+		queryKey: ['top-users', first],
+		async queryFn() {
+			try {
+				return await request(SUBGRAPH_URL, GET_TOP_USERS, { first })
+			} catch (error) {
+				console.log('The Graph Error (Top Users):', error)
+				throw new Error('The Graph connection error - feature in development')
+			}
+		},
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		retry: 2,
+		refetchOnWindowFocus: false
 	})
 }
 

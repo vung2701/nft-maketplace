@@ -191,6 +191,22 @@ export const GET_USER_STATS = gql`
   }
 `
 
+export const GET_TOP_USERS = gql`
+  query GetTopUsers($first: Int!) {
+    users(first: $first, orderBy: totalVolumeAsBuyer, orderDirection: desc) {
+      id
+      address
+      totalListings
+      totalPurchases
+      totalSales
+      totalVolumeAsBuyer
+      totalVolumeAsSeller
+      firstActivityAt
+      lastActivityAt
+    }
+  }
+`
+
 export const GET_TOP_COLLECTIONS = gql`
   query GetTopCollections($first: Int!) {
     collections(first: $first, orderBy: totalVolume, orderDirection: desc) {
