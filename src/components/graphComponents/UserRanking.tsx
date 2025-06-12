@@ -67,9 +67,7 @@ const UserRanking: React.FC = () => {
       title: 'Người dùng',
       dataIndex: 'address',
       key: 'address',
-      render: (address: string) => (
-        <Text code>{formatAddress(address)}</Text>
-      )
+      render: (address: string) => <Text code>{formatAddress(address)}</Text>
     },
     {
       title: 'Đã mua',
@@ -120,7 +118,7 @@ const UserRanking: React.FC = () => {
         </div>
       </Card>
 
-      <Card 
+      <Card
         title={
           <span>
             <TrophyOutlined /> Top người dùng
@@ -141,4 +139,4 @@ const UserRanking: React.FC = () => {
   );
 };
 
-export default UserRanking; 
+export default UserRanking;

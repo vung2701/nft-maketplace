@@ -61,7 +61,4 @@ const pinataAxios = (): AxiosInstance => {
   });
 };
 
-
-
-
 export { axiosInstance, createAxios, uploadAxios, pinataAxios };

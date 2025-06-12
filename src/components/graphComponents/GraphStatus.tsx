@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Badge, Typography, Space, Button, Alert, Descriptions, Divider } from 'antd';
-import { 
-  ApiOutlined, 
-  CheckCircleOutlined, 
-  ExclamationCircleOutlined, 
+import {
+  ApiOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
   ReloadOutlined,
   GlobalOutlined,
   DatabaseOutlined,
@@ -27,8 +27,8 @@ const GraphStatus: React.FC<GraphStatusProps> = ({ style }) => {
       setIsLoading(true);
       try {
         // Simulate API check
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
         // Mock random connection status for demo
         const connected = Math.random() > 0.3; // 70% chance of being connected
         setIsConnected(connected);
@@ -41,7 +41,7 @@ const GraphStatus: React.FC<GraphStatusProps> = ({ style }) => {
     };
 
     checkConnection();
-    
+
     // Check every 30 seconds
     const interval = setInterval(checkConnection, 30000);
     return () => clearInterval(interval);
@@ -61,22 +61,22 @@ const GraphStatus: React.FC<GraphStatusProps> = ({ style }) => {
     if (isLoading) {
       return <Badge status="processing" text="Đang kiểm tra..." />;
     }
-    return isConnected 
-      ? <Badge status="success" text="Đã kết nối" />
-      : <Badge status="error" text="Mất kết nối" />;
+    return isConnected ? <Badge status="success" text="Đã kết nối" /> : <Badge status="error" text="Mất kết nối" />;
   };
 
   const getStatusIcon = () => {
     if (isLoading) return <ReloadOutlined spin />;
-    return isConnected 
-      ? <CheckCircleOutlined style={{ color: '#52c41a' }} />
-      : <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />;
+    return isConnected ? (
+      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+    ) : (
+      <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
+    );
   };
 
   return (
-    <Card 
-      size="small" 
-      style={{ 
+    <Card
+      size="small"
+      style={{
         position: 'fixed',
         bottom: '20px',
         right: '20px',
@@ -91,15 +91,7 @@ const GraphStatus: React.FC<GraphStatusProps> = ({ style }) => {
           <span>Trạng thái real-time</span>
         </Space>
       }
-      extra={
-        <Button 
-          type="text" 
-          size="small" 
-          icon={<ReloadOutlined />}
-          onClick={handleRefresh}
-          loading={isLoading}
-        />
-      }
+      extra={<Button type="text" size="small" icon={<ReloadOutlined />} onClick={handleRefresh} loading={isLoading} />}
     >
       <Space direction="vertical" style={{ width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -109,45 +101,53 @@ const GraphStatus: React.FC<GraphStatusProps> = ({ style }) => {
           </Space>
         </div>
 
-                 {!isConnected && !isLoading && (
-           <Alert
-             message="Kết nối The Graph thất bại"
-             description="Đang sử dụng dữ liệu demo"
-             type="warning"
-             showIcon
-           />
-         )}
+        {!isConnected && !isLoading && (
+          <Alert message="Kết nối The Graph thất bại" description="Đang sử dụng dữ liệu demo" type="warning" showIcon />
+        )}
 
         <Descriptions column={1} size="small">
-          <Descriptions.Item 
-            label={<Space><DatabaseOutlined style={{ fontSize: '12px' }} />Subgraph</Space>}
+          <Descriptions.Item
+            label={
+              <Space>
+                <DatabaseOutlined style={{ fontSize: '12px' }} />
+                Subgraph
+              </Space>
+            }
           >
-            <Link 
-              href="https://api.studio.thegraph.com/query/112713/nft-marketplace/version/latest" 
+            <Link
+              href="https://api.studio.thegraph.com/query/112713/nft-marketplace/version/latest"
               target="_blank"
               style={{ fontSize: '11px' }}
             >
               NFT Marketplace v1.0
             </Link>
           </Descriptions.Item>
-          
-          <Descriptions.Item 
-            label={<Space><GlobalOutlined style={{ fontSize: '12px' }} />Network</Space>}
+
+          <Descriptions.Item
+            label={
+              <Space>
+                <GlobalOutlined style={{ fontSize: '12px' }} />
+                Network
+              </Space>
+            }
           >
             <Text style={{ fontSize: '11px' }}>Sepolia Testnet</Text>
           </Descriptions.Item>
-          
-          <Descriptions.Item 
-            label={<Space><ClockCircleOutlined style={{ fontSize: '12px' }} />Cập nhật</Space>}
+
+          <Descriptions.Item
+            label={
+              <Space>
+                <ClockCircleOutlined style={{ fontSize: '12px' }} />
+                Cập nhật
+              </Space>
+            }
           >
-            <Text style={{ fontSize: '11px' }}>
-              {lastUpdate || 'Chưa có dữ liệu'}
-            </Text>
+            <Text style={{ fontSize: '11px' }}>{lastUpdate || 'Chưa có dữ liệu'}</Text>
           </Descriptions.Item>
         </Descriptions>
 
         <Divider style={{ margin: '8px 0' }} />
-        
+
         <div style={{ fontSize: '10px', color: '#8c8c8c', textAlign: 'center' }}>
           <Space split={<span>•</span>}>
             <span>Real-time data</span>
@@ -160,4 +160,4 @@ const GraphStatus: React.FC<GraphStatusProps> = ({ style }) => {
   );
 };
 
-export default GraphStatus; 
+export default GraphStatus;

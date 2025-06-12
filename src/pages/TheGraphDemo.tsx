@@ -11,8 +11,7 @@ const TheGraphDemo: React.FC = () => {
       key: '1',
       label: (
         <span>
-          <BarChartOutlined />
-          Thống kê
+          <BarChartOutlined /> Thống kê
         </span>
       ),
       children: <MarketplaceStats />
@@ -21,8 +20,7 @@ const TheGraphDemo: React.FC = () => {
       key: '2',
       label: (
         <span>
-          <DatabaseOutlined />
-          Tài liệu
+          <DatabaseOutlined /> Tài liệu
         </span>
       ),
       children: (

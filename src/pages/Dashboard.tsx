@@ -14,7 +14,7 @@ const Dashboard = () => {
       key: '1',
       label: (
         <span>
-          <BarChartOutlined />
+          <BarChartOutlined style={{ marginRight: '8px' }} />
           Thống kê
         </span>
       ),
@@ -24,7 +24,7 @@ const Dashboard = () => {
       key: '2',
       label: (
         <span>
-          <TrophyOutlined />
+          <TrophyOutlined style={{ marginRight: '8px' }} />
           Xếp hạng
         </span>
       ),
@@ -34,7 +34,7 @@ const Dashboard = () => {
       key: '3',
       label: (
         <span>
-          <HistoryOutlined />
+          <HistoryOutlined style={{ marginRight: '8px' }} />
           Lịch sử giao dịch
         </span>
       ),
@@ -57,9 +57,8 @@ const Dashboard = () => {
 
         <Tabs defaultActiveKey="1" size="large" items={tabItems} />
       </Space>
-      
-      {/* Real-time status indicator */}
-      <GraphStatus />
+
+      {/* <GraphStatus /> */}
     </div>
   );
 };
