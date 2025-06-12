@@ -26,9 +26,12 @@
     "wagmi": "^2.12.10"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react-swc": "^3.10.2",
     "dotenv": "^16.5.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
