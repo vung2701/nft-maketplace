@@ -7,11 +7,6 @@ export const headers = {
   // Authorization: 'Bearer {api-key}' // Uncomment if API key is required
 }
 
-// ===================================
-// 📡 Updated GraphQL Queries 
-// Synced with new schema
-// ===================================
-
 export const GET_ALL_LISTINGS = gql`
   query GetAllListings($first: Int!, $skip: Int!) {
     listings(first: $first, skip: $skip, orderBy: listedAt, orderDirection: desc) {

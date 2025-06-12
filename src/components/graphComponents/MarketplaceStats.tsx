@@ -50,7 +50,6 @@ const MarketplaceStats: React.FC = () => {
   const totalSales = parseInt(stats.totalSales);
   const totalActiveListings = parseInt(stats.totalActiveListings);
   const totalUsers = parseInt(stats.totalUsers);
-  const totalCollections = parseInt(stats.totalCollections);
 
   return (
     <div style={{ padding: '20px' }}>

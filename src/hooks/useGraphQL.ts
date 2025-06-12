@@ -6,12 +6,9 @@ import {
 	GET_PURCHASE_HISTORY,
 	GET_MARKETPLACE_STATS,
 	GET_TOP_USERS,
-
 	formatPrice,
-	formatPriceShort,
 	formatAddress,
 	formatDate,
-	formatDateTime,
 	formatTimeAgo,
 	formatVolume
 } from '../services/graphqlClient'

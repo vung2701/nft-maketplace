@@ -10,11 +10,10 @@ import { MoralisProvider } from './providers/MoralisProvider';
 import '@rainbow-me/rainbowkit/styles.css';
 import './styles/global.css';
 
-// Create QueryClient with proper configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
+      staleTime: 60 * 1000,
       retry: 1,
       refetchOnWindowFocus: false
     }

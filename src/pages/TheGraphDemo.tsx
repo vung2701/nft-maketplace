@@ -105,7 +105,7 @@ const TheGraphDemo: React.FC = () => {
           </Paragraph>
         </div>
 
-        <Alert
+        {/* <Alert
           message="🎉 Schema mới đã được áp dụng thành công!"
           description={
             <div>
@@ -119,7 +119,7 @@ const TheGraphDemo: React.FC = () => {
           type="success"
           showIcon
           style={{ marginBottom: '20px' }}
-        />
+        /> */}
 
         <Tabs defaultActiveKey="1" size="large" items={tabItems} />
       </Space>

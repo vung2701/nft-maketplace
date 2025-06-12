@@ -34,7 +34,6 @@ export const Home: React.FC = () => {
     }
   };
 
-  // Xử lý list NFT
   const handleListNFT = async (tokenId: number, price: string) => {
     if (!price || isNaN(Number(price)) || Number(price) <= 0) {
       return message.error(MESSAGES.INVALID_PRICE);
@@ -53,7 +52,6 @@ export const Home: React.FC = () => {
     }
   };
 
-  // Effect để load NFTs khi kết nối thay đổi
   useEffect(() => {
     if (isConnected) {
       fetchUserNFTs();
