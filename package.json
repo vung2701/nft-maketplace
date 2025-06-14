@@ -35,7 +35,9 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "@vitejs/plugin-react-swc": "^3.10.2",
+    "crypto-browserify": "^3.12.1",
     "dotenv": "^16.5.0",
+    "stream-browserify": "^3.0.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
   },
