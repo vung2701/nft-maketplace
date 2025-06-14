@@ -8,6 +8,7 @@ export interface NFTItem {
   image: string;
   owner: string;
   isListed: boolean;
+  isSold?: boolean;
   price?: string;
   listingId?: number;
 }
