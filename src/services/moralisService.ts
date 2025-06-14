@@ -261,14 +261,6 @@ export class MoralisService {
 	private processNFTData(nftData: any, chainId: number): ProcessedNFT {
 		let metadata: NFTMetadata | null = null;
 
-		// Debug logging
-		console.log('🔍 Processing NFT data:', {
-			tokenAddress: nftData.token_address,
-			tokenId: nftData.token_id,
-			hasMetadata: !!nftData.metadata,
-			chainId
-		});
-
 		// Parse metadata nếu có
 		if (nftData.metadata) {
 			try {
@@ -276,11 +268,6 @@ export class MoralisService {
 					? JSON.parse(nftData.metadata)
 					: nftData.metadata;
 
-				console.log('📄 Parsed metadata:', {
-					name: metadata?.name,
-					image: metadata?.image,
-					description: metadata?.description
-				});
 			} catch (error) {
 				console.warn('Failed to parse NFT metadata:', error);
 			}
@@ -298,7 +285,6 @@ export class MoralisService {
 			image: (() => {
 				const rawImage = metadata?.image || '';
 				const resolvedImage = resolveIPFS(rawImage);
-				console.log('🖼️ Image resolution:', { rawImage, resolvedImage });
 				return resolvedImage;
 			})(),
 			externalUrl: metadata?.external_url,

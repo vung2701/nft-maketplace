@@ -23,14 +23,11 @@ export const MoralisProvider: React.FC<MoralisProviderProps> = ({ children }) =>
     try {
       setIsLoading(true);
       setError(null);
-      
       await initializeMoralis();
       setIsInitialized(true);
-      console.log('🚀 Moralis Provider: Initialized successfully');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to initialize Moralis';
       setError(errorMessage);
-      console.error('❌ Moralis Provider: Initialization failed:', err);
     } finally {
       setIsLoading(false);
     }
@@ -42,15 +39,15 @@ export const MoralisProvider: React.FC<MoralisProviderProps> = ({ children }) =>
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const init = async () => {
       if (isMounted) {
         await initMoralis();
       }
     };
-    
+
     init();
-    
+
     return () => {
       isMounted = false;
     };
@@ -63,11 +60,7 @@ export const MoralisProvider: React.FC<MoralisProviderProps> = ({ children }) =>
     retry
   };
 
-  return (
-    <MoralisContext.Provider value={value}>
-      {children}
-    </MoralisContext.Provider>
-  );
+  return <MoralisContext.Provider value={value}>{children}</MoralisContext.Provider>;
 };
 
 export const useMoralisContext = (): MoralisContextType => {
@@ -76,4 +69,4 @@ export const useMoralisContext = (): MoralisContextType => {
     throw new Error('useMoralisContext must be used within a MoralisProvider');
   }
   return context;
-}; 
+};

@@ -56,23 +56,17 @@ export const initializeMoralis = async (): Promise<void> => {
 				throw new Error('VITE_MORALIS_API_KEY is required in environment variables');
 			}
 
-			console.log('🔄 Starting Moralis initialization...');
-
 			await Moralis.start({
 				apiKey: MORALIS_CONFIG.apiKey,
 			});
 
 			isInitialized = true;
-			console.log('✅ Moralis initialized successfully');
 		} catch (error: any) {
-			// Reset promise on error so it can be retried
 			initializationPromise = null;
 
-			// Handle "already started" error gracefully
 			if (error.message?.includes('Modules are started already') ||
 				error.message?.includes('C0009') ||
 				error.code === 'C0009') {
-				console.log('✅ Moralis was already initialized');
 				isInitialized = true;
 				return;
 			}
@@ -136,14 +130,6 @@ export const resolveIPFS = (url: string): string => {
 	const gateway = MORALIS_CONFIG.pinata.gateway || MORALIS_CONFIG.ipfsGateways[0];
 	const cleanGateway = gateway.endsWith('/') ? gateway : gateway + '/';
 	const finalUrl = `${cleanGateway}${hash}`;
-
-	console.log('🔗 IPFS URL Resolution:', {
-		original: url,
-		hash,
-		gateway: cleanGateway,
-		final: finalUrl
-	});
-
 	return finalUrl;
 };
 

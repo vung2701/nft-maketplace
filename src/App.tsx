@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { Layout, Menu } from 'antd';
 import { Home } from './pages/Home';
 import Marketplace from './pages/MarketPlace';
-import MoralisDemo from './pages/MoralisDemo';
 import { ROUTES, DEFAULT_VALUES } from './constants';
 import './styles/global.css';
 import Dashboard from './pages/Dashboard';
@@ -23,8 +22,6 @@ const App = () => {
         ? 'marketplace'
         : path === ROUTES.DASHBOARD
         ? 'dashboard'
-        : path === ROUTES.MORALIS
-        ? 'moralis'
         : ''
     ]);
   }, [location]);
@@ -48,10 +45,6 @@ const App = () => {
             {
               key: 'the-graph',
               label: <Link to={ROUTES.DASHBOARD}>Dashboard</Link>
-            },
-            {
-              key: 'moralis',
-              label: <Link to={ROUTES.MORALIS}>Moralis Demo</Link>
             }
           ]}
         />
@@ -67,7 +60,6 @@ const App = () => {
             <Route path={ROUTES.HOME} element={<Home />} />
             <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
             <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-            <Route path={ROUTES.MORALIS} element={<MoralisDemo />} />
           </Routes>
         </div>
       </Content>

@@ -3,7 +3,6 @@ export const ROUTES = {
 	HOME: '/',
 	MARKETPLACE: '/marketplace',
 	THE_GRAPH: '/the-graph',
-	MORALIS: '/moralis',
 	DASHBOARD: '/dashboard',
 } as const;
 
