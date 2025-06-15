@@ -35,12 +35,12 @@ const App = () => {
           selectedKeys={selectedKeys}
           items={[
             {
-              key: 'home',
-              label: <Link to={ROUTES.HOME}>Home</Link>
-            },
-            {
               key: 'marketplace',
               label: <Link to={ROUTES.MARKETPLACE}>Marketplace</Link>
+            },
+            {
+              key: 'mint-nft',
+              label: <Link to={ROUTES.HOME}>Mint NFTs</Link>
             },
             {
               key: 'the-graph',

@@ -32,7 +32,7 @@ export const MINT_STEPS = {
 export const DEFAULT_VALUES = {
 	IMAGE_HEIGHT: 240,
 	CONTENT_MARGIN: 40,
-	HEADER_HEIGHT: 64
+	HEADER_HEIGHT: 150
 } as const;
 
 // Các màu sắc
