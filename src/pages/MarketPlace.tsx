@@ -3,7 +3,6 @@ import { Row, Col, message, Divider, Select, Card, Button, Tag, Alert, Spin } fr
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { NFTItem } from '../types';
-import { NFTCard } from '../components/NFTCard';
 import { useNFTContract } from '../hooks/useNFTContract';
 import { MESSAGES, COLORS } from '../constants';
 import { parseWei } from '../utils/web3';
@@ -13,21 +12,18 @@ import { useAccount, usePublicClient } from 'wagmi';
 import { useUserNFTs, useResyncNFTMetadata, useNFTDetails } from '../hooks/useMoralis';
 import { useMoralisContext } from '../providers/MoralisProvider';
 import { IPFSImage } from '../components/moralisComponents/IPFSImage';
-import { MoralisStatus } from '../components/moralisComponents/MoralisStatus';
 import { getChainName } from '../config/moralis';
-import { ProcessedNFT } from '../types/nft';
 import MarketPlaceABI from '../abis/MarketPlace.json';
 
 const { Meta } = Card;
 
 const Marketplace: React.FC = () => {
-  // State
   const [myListedNFTs, setMyListedNFTs] = useState<NFTItem[]>([]);
   const [otherListedNFTs, setOtherListedNFTs] = useState<NFTItem[]>([]);
   const [myNFTs, setMyNFTs] = useState<NFTItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
-  const [selectedChain, setSelectedChain] = useState(11155111); // Default to Sepolia
+  const [selectedChain, setSelectedChain] = useState(11155111);
 
   // Custom hook cho tương tác với smart contract
   const { buyNFT, listNFT, isConnected, contractAddress, marketplaceAddress } = useNFTContract();
@@ -102,28 +98,37 @@ const Marketplace: React.FC = () => {
       // Lấy thông tin listing từ contract
       const listings = await getListingsFromContract();
 
-      for (const nft of moralisData.nfts) {
+      const listingMap = new Map(listings.map((listing) => [listing.tokenId.toString(), listing]));
+
+      const validNFTs = moralisData.nfts.filter((nft) => {
+        const isValid = nft.tokenAddress && nft.tokenId && nft.owner;
+        return isValid;
+      });
+
+      for (const nft of validNFTs) {
+        console.log('🔍 Xử lý NFT:', nft);
         // Chỉ xử lý NFT từ contract của chúng ta
-        if (nft.tokenAddress.toLowerCase() !== contractAddress.toLowerCase()) {
+        if (nft.tokenAddress.toLowerCase() != contractAddress.toLowerCase()) {
+          console.log('⏭️ Bỏ qua NFT không thuộc contract');
           continue;
         }
 
-        // Tìm thông tin listing nếu có
-        const listing = listings.find((l) => l.tokenId === BigInt(nft.tokenId) && !l.isSold);
+        // Lấy thông tin listing từ map
+        const listing = listingMap.get(nft.tokenId);
 
         const nftItem: NFTItem = {
           tokenId: Number(nft.tokenId),
-          name: nft.name || 'Unnamed NFT',
+          name: nft.name || 'No name',
           description: nft.description || 'No description',
           image: nft.image,
           owner: nft.owner,
-          isListed: !!listing,
-          price: listing ? (Number(listing.price) / 1e18).toString() : undefined,
+          isListed: !!listing && !listing.isSold,
+          price: listing && !listing.isSold ? (Number(listing.price) / 1e18).toString() : undefined,
           listingId: listing ? listings.indexOf(listing) : undefined
         };
 
         // Phân loại NFT dựa trên owner và trạng thái listing
-        if (listing) {
+        if (listing && !listing.isSold) {
           if (listing.seller.toLowerCase() === address?.toLowerCase()) {
             processedMyListedNFTs.push(nftItem);
           } else {
@@ -133,12 +138,6 @@ const Marketplace: React.FC = () => {
           processedMyNFTs.push(nftItem);
         }
       }
-
-      console.log('📊 Kết quả xử lý:', {
-        myNFTs: processedMyNFTs.length,
-        myListedNFTs: processedMyListedNFTs.length,
-        otherListedNFTs: processedOtherNFTs.length
-      });
 
       // Cập nhật state
       setMyNFTs(processedMyNFTs);
@@ -161,8 +160,6 @@ const Marketplace: React.FC = () => {
     }
 
     try {
-      console.log('🔄 Đang lấy listings từ contract:', marketplaceAddress);
-
       const listings = (await publicClient.readContract({
         address: marketplaceAddress as `0x${string}`,
         abi: MarketPlaceABI,
@@ -180,7 +177,6 @@ const Marketplace: React.FC = () => {
   // Effect để load NFTs khi kết nối thay đổi
   useEffect(() => {
     if (isConnected && isInitialized && address) {
-      console.log('✅ Điều kiện thỏa mãn, gọi processNFTsFromMoralis');
       processNFTsFromMoralis();
     } else {
       setMyListedNFTs([]);
@@ -266,9 +262,6 @@ const Marketplace: React.FC = () => {
             <ConnectButton />
           </div>
         </div>
-
-        {/* Debug Status */}
-        <MoralisStatus />
 
         {loading || nftsLoading ? (
           <ContentLoading height={400} tip="Đang tải danh sách NFT..." />

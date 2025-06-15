@@ -161,4 +161,16 @@ export interface MoralisError {
 	message: string;
 	code?: number;
 	details?: any;
+}
+
+export interface NFTItem {
+	tokenId: number;
+	name: string;
+	description: string;
+	image: string;
+	owner: string;
+	isListed: boolean;
+	price?: string;
+	listingsId?: number;
+	seller: string;
 } 

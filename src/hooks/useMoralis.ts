@@ -28,23 +28,12 @@ export const useUserNFTs = (
 		refetchInterval?: number;
 	}
 ) => {
-	console.log('🔄 useUserNFTs hook được gọi với:', {
-		address,
-		chainId,
-		options
-	});
 
 	return useQuery({
 		queryKey: MORALIS_QUERY_KEYS.USER_NFTS(address || '', chainId),
 		queryFn: async () => {
 			if (!address) throw new Error('Address is required');
-			console.log('🔍 Đang gọi API để lấy NFTs cho địa chỉ:', address);
 			const result = await moralisService.getUserNFTs(address, chainId);
-			console.log('✅ Kết quả từ Moralis API:', {
-				totalNfts: result.nfts.length,
-				cursor: result.cursor,
-				firstFewNfts: result.nfts.slice(0, 3)
-			});
 			return result;
 		},
 		enabled: !!address && (options?.enabled !== false),

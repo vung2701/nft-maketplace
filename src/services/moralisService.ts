@@ -44,6 +44,7 @@ export class MoralisService {
 				normalizeMetadata: true
 			});
 
+
 			// Extract result từ response với flexible approach
 			const nfts = (response as any)?.result || [];
 			const nextCursor = (response as any)?.cursor;
@@ -260,27 +261,27 @@ export class MoralisService {
 	 */
 	private processNFTData(nftData: any, chainId: number): ProcessedNFT {
 		let metadata: NFTMetadata | null = null;
-
 		// Parse metadata nếu có
 		if (nftData.metadata) {
 			try {
 				metadata = typeof nftData.metadata === 'string'
 					? JSON.parse(nftData.metadata)
 					: nftData.metadata;
-
+				
 			} catch (error) {
 				console.warn('Failed to parse NFT metadata:', error);
 			}
 		}
 
+
 		return {
 			// Basic info
-			tokenAddress: nftData.token_address || '',
-			tokenId: nftData.token_id || '',
-			owner: nftData.owner_of || '',
+			tokenAddress: nftData.tokenAddress._value || '',
+			tokenId: nftData.tokenId || '',
+			owner: nftData.ownerOf._value || '',
 
 			// Metadata
-			name: metadata?.name || nftData.name || `#${nftData.token_id || 'Unknown'}`,
+			name: metadata?.name || nftData.name || `#${nftData.tokenId || 'Unknown'}`,
 			description: metadata?.description || '',
 			image: (() => {
 				const rawImage = metadata?.image || '';
@@ -318,7 +319,6 @@ export class MoralisService {
 	 */
 	private handleError(error: any, message: string): MoralisError {
 		console.error(message, error);
-
 		return {
 			message: message,
 			code: error.code || 500,
