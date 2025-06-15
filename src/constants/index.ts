@@ -1,6 +1,7 @@
 // Các routes trong ứng dụng
 export const ROUTES = {
 	HOME: '/',
+	MINT_NFT: '/mint-nft',
 	MARKETPLACE: '/marketplace',
 	THE_GRAPH: '/the-graph',
 	DASHBOARD: '/dashboard',

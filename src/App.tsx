@@ -6,6 +6,7 @@ import Marketplace from './pages/MarketPlace';
 import { ROUTES, DEFAULT_VALUES } from './constants';
 import './styles/global.css';
 import Dashboard from './pages/Dashboard';
+import { MintNFT } from './pages/MintNFT';
 
 const { Header, Content } = Layout;
 
@@ -17,9 +18,11 @@ const App = () => {
     const path = location.pathname;
     setSelectedKeys([
       path === ROUTES.HOME
-        ? 'home'
+        ? '/'
         : path === ROUTES.MARKETPLACE
         ? 'marketplace'
+        : path === ROUTES.MINT_NFT
+        ? 'mint-nft'
         : path === ROUTES.DASHBOARD
         ? 'dashboard'
         : ''
@@ -40,7 +43,7 @@ const App = () => {
             },
             {
               key: 'mint-nft',
-              label: <Link to={ROUTES.HOME}>Mint NFTs</Link>
+              label: <Link to={ROUTES.MINT_NFT}>Mint NFTs</Link>
             },
             {
               key: 'the-graph',
@@ -58,6 +61,7 @@ const App = () => {
         <div className="container">
           <Routes>
             <Route path={ROUTES.HOME} element={<Home />} />
+            <Route path={ROUTES.MINT_NFT} element={<MintNFT />} />
             <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
             <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           </Routes>

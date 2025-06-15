@@ -201,23 +201,6 @@ const Marketplace: React.FC = () => {
     );
   }
 
-  // Xử lý hiển thị khi có lỗi Moralis
-  if (moralisError) {
-    return (
-      <Alert
-        message="⚙️ Cấu hình Moralis API Key"
-        description={
-          <div>
-            <strong>Lỗi:</strong> {moralisError}
-          </div>
-        }
-        type="error"
-        showIcon
-        action={<Button onClick={retry}>Thử lại</Button>}
-      />
-    );
-  }
-
   // Xử lý hiển thị khi chưa kết nối wallet
   if (!address) {
     return (
@@ -508,7 +491,6 @@ const Marketplace: React.FC = () => {
                         Sepolia Etherscan
                       </a>
                     </li>
-                    <li>Thử resync metadata bằng button "Resync"</li>
                   </ul>
                 </div>
               )}
