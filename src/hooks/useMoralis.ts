@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { moralisService } from '../services/moralisService';
-import type { ProcessedNFT, NFTCollection, NFTTransfer } from '../types/nft';
 
 // Query Keys
 export const MORALIS_QUERY_KEYS = {

@@ -7,6 +7,9 @@ import { ROUTES, DEFAULT_VALUES } from './constants';
 import './styles/global.css';
 import Dashboard from './pages/Dashboard';
 import { MintNFT } from './pages/MintNFT';
+import Pricing from './pages/Pricing';
+import Rewards from './pages/Rewards';
+import Rarity from './pages/Rarity';
 
 const { Header, Content } = Layout;
 
@@ -25,6 +28,12 @@ const App = () => {
         ? 'mint-nft'
         : path === ROUTES.DASHBOARD
         ? 'dashboard'
+        : path === ROUTES.PRICING
+        ? 'pricing'
+        : path === ROUTES.REWARDS
+        ? 'rewards'
+        : path === ROUTES.RARITY
+        ? 'rarity'
         : ''
     ]);
   }, [location]);
@@ -46,6 +55,18 @@ const App = () => {
               label: <Link to={ROUTES.MINT_NFT}>Mint NFTs</Link>
             },
             {
+              key: 'pricing',
+              label: <Link to={ROUTES.PRICING}>Dynamic Pricing</Link>
+            },
+            {
+              key: 'rewards',
+              label: <Link to={ROUTES.REWARDS}>Rewards</Link>
+            },
+            {
+              key: 'rarity',
+              label: <Link to={ROUTES.RARITY}>Rarity</Link>
+            },
+            {
               key: 'the-graph',
               label: <Link to={ROUTES.DASHBOARD}>Dashboard</Link>
             }
@@ -63,6 +84,9 @@ const App = () => {
             <Route path={ROUTES.HOME} element={<Home />} />
             <Route path={ROUTES.MINT_NFT} element={<MintNFT />} />
             <Route path={ROUTES.MARKETPLACE} element={<Marketplace />} />
+            <Route path={ROUTES.PRICING} element={<Pricing />} />
+            <Route path={ROUTES.REWARDS} element={<Rewards />} />
+            <Route path={ROUTES.RARITY} element={<Rarity />} />
             <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           </Routes>
         </div>

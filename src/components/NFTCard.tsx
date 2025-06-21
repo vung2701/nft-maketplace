@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Button, Input, Space } from 'antd';
+import { Card, Button, Input, Space, Tag } from 'antd';
+import { StarOutlined } from '@ant-design/icons';
 import { NFTItem } from '../types';
-import { DEFAULT_VALUES, COLORS } from '../constants';
+import { DEFAULT_VALUES, COLORS, RARITY_TIERS } from '../constants';
 
 interface NFTCardProps {
   nft: NFTItem;
@@ -18,6 +19,12 @@ interface CardAction {
 
 export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction, onBuy, onList }) => {
   const [price, setPrice] = useState('');
+
+  // Lấy thông tin rarity tier
+  const getRarityTierInfo = (tier: string) => {
+    const tierInfo = Object.values(RARITY_TIERS).find(t => t.name === tier);
+    return tierInfo || RARITY_TIERS.COMMON;
+  };
 
   // Xử lý các actions của card
   const getCardActions = (): CardAction[] => {
@@ -64,18 +71,52 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction,
   return (
     <Card
       cover={
-        <img
-          alt={nft.name}
-          src={nft.image}
-          style={{
-            height: DEFAULT_VALUES.IMAGE_HEIGHT,
-            objectFit: 'cover'
-          }}
-        />
+        <div style={{ position: 'relative' }}>
+          <img
+            alt={nft.name}
+            src={nft.image}
+            style={{
+              height: DEFAULT_VALUES.IMAGE_HEIGHT,
+              objectFit: 'cover',
+              width: '100%'
+            }}
+          />
+          {/* Hiển thị rarity badge */}
+          {nft.rarity && nft.rarity.isVerified && (
+            <Tag
+              color={getRarityTierInfo(nft.rarity.rarityTier).color}
+              style={{
+                position: 'absolute',
+                top: '8px',
+                right: '8px',
+                margin: 0,
+                borderRadius: '12px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: 'bold'
+              }}
+            >
+              <StarOutlined /> {nft.rarity.rarityTier}
+            </Tag>
+          )}
+        </div>
       }
       actions={getCardActions().map((action) => action.content)}
     >
-      <Card.Meta title={nft.name} description={nft.description} />
+      <Card.Meta 
+        title={nft.name} 
+        description={
+          <div>
+            <div>{nft.description}</div>
+            {/* Hiển thị rarity score */}
+            {nft.rarity && nft.rarity.isVerified && (
+              <div style={{ marginTop: '8px', fontSize: '12px', color: getRarityTierInfo(nft.rarity.rarityTier).color }}>
+                Rarity Score: {nft.rarity.rarityScore}/10000
+              </div>
+            )}
+          </div>
+        } 
+      />
       {showStatus && customAction}
     </Card>
   );

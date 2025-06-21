@@ -11,6 +11,74 @@ export interface NFTItem {
   isSold?: boolean;
   price?: string;
   listingId?: number;
+  rarity?: NFTRarity;
+}
+
+// ===================================
+// 🔗 Chainlink Features Types
+// ===================================
+
+// Dynamic Pricing Types
+export interface Transaction {
+  user: string;
+  amountETH: string;
+  amountUSD: string;
+  feeETH: string;
+  feeUSD: string;
+  timestamp: string;
+}
+
+export interface PriceData {
+  ethPrice: string; // ETH/USD price from Chainlink
+  lastUpdated: string;
+}
+
+export interface FeeCalculation {
+  feeETH: string;
+  feeUSD: string;
+  totalETH: string;
+  totalUSD: string;
+}
+
+// Automated Rewards Types
+export interface UserActivity {
+  userAddress: string;
+  tradingVolume: string;
+  transactionCount: string;
+  lastActive: string;
+}
+
+export interface RewardDistribution {
+  timestamp: string;
+  recipients: string[];
+  amounts: string[];
+  totalDistributed: string;
+}
+
+export interface UserReward {
+  user: string;
+  amount: string;
+  rank: number;
+  percentage: string;
+}
+
+// Rarity Verification Types
+export interface NFTRarity {
+  nftAddress: string;
+  tokenId: string;
+  rarityScore: string;
+  rarityTier: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+  traits: string[];
+  timestamp: string;
+  isVerified: boolean;
+}
+
+export interface RarityStats {
+  totalVerified: number;
+  averageRarity: string;
+  distribution: {
+    [key: string]: number;
+  };
 }
 
 // ===================================
@@ -30,6 +98,7 @@ export interface Listing {
   soldAt?: string; // Sale timestamp if sold (BigInt)
   transactionHash: string; // Transaction hash (Bytes)
   purchase?: Purchase; // Reference to purchase if sold
+  priceInUSD?: string; // Converted price using Chainlink oracle
 }
 
 export interface Purchase {
@@ -42,6 +111,8 @@ export interface Purchase {
   price: string; // Sale price in Wei (BigInt)
   timestamp: string; // Block timestamp (BigInt)
   transactionHash: string; // Transaction hash (Bytes)
+  priceInUSD?: string; // Converted price using Chainlink oracle
+  rewardEarned?: string; // Reward points earned from this purchase
 }
 
 export interface User {
@@ -57,6 +128,9 @@ export interface User {
   listings?: Listing[]; // User's listings
   purchases?: Purchase[]; // User's purchases
   sales?: Purchase[]; // User's sales
+  rewardBalance?: string; // Current reward token balance
+  totalRewardsEarned?: string; // Total rewards earned all time
+  rarityScore?: string; // User's average NFT rarity score
 }
 
 export interface Collection {
@@ -67,6 +141,7 @@ export interface Collection {
   totalVolume: string; // Total volume traded in Wei (BigInt)
   floorPrice: string; // Current floor price (BigInt)
   lastSalePrice: string; // Last sale price (BigInt)
+  averageRarity?: string; // Average rarity score of NFTs in collection
 }
 
 export interface MarketplaceStat {
@@ -79,6 +154,8 @@ export interface MarketplaceStat {
   totalCollections: string; // Unique collections traded (BigInt)
   totalUsers: string; // Unique users (BigInt)
   updatedAt: string; // Last update timestamp (BigInt)
+  totalRewardsDistributed?: string; // Total rewards distributed
+  averageRarity?: string; // Average rarity across all NFTs
 }
 
 // NFT Metadata interface for IPFS/tokenURI data
@@ -140,4 +217,6 @@ export interface UserStatsDisplay {
   totalTrades: string;
   avgPrice: string;
   winRate: string;
+  rewardBalance?: string;
+  rarityScore?: string;
 }
