@@ -2,9 +2,8 @@
 
 interface ImportMetaEnv {
 	readonly VITE_MORALIS_API_KEY?: string,
-	readonly VITE_MARKETPLACE_ADDRESS?: string,
-	readonly VITE_NFT_CONTRACT_SEPOLIA_ADDRESS?: string,
 	readonly VITE_ACCOUNT_DEPLOY?: string,
+	readonly VITE_MARKETPLACE_ADDRESS?: string,
 	readonly VITE_NFT_COLLECTION_ADDRESS?: string,
 	readonly VITE_REWARD_TOKEN_ADDRESS?: string,
 	readonly VITE_DYNAMIC_PRICING_ADDRESS?: string,
