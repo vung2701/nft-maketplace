@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Input, Button, Table, Typography, Space, Tag, Row, Col, Form, Select, Progress } from 'antd';
+import { Card, Input, Button, Table, Typography, Tag, Row, Col, Form, Select } from 'antd';
 import { StarOutlined, CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useChainlinkContracts } from '../../hooks/useChainlinkContracts';
 import { RARITY_TIERS } from '../../constants';
@@ -8,126 +8,94 @@ import type { NFTRarity } from '../../types';
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-interface RarityRequestForm {
+// ES6 Utility functions với arrow functions
+const formatAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`;
+const formatDate = (timestamp) => new Date(parseInt(timestamp) * 1000).toLocaleString('vi-VN');
+
+// ES6 const array
+const COMMON_TRAITS = ['Background', 'Body', 'Eyes', 'Mouth', 'Hat', 'Clothing', 'Accessories', 'Special'];
+
+interface FormValues {
   nftAddress: string;
   tokenId: string;
-  traits: string[];
 }
 
-export const RarityVerification: React.FC = () => {
-  const {
-    requestRarityVerification,
-    getNFTRarity,
-    getAllRarities,
-    isLoading
-  } = useChainlinkContracts();
-
-  const [form] = Form.useForm<RarityRequestForm>();
+export const RarityVerification = () => {
+  const { requestRarityVerification, getAllRarities, isLoading } = useChainlinkContracts();
+  
+  const [form] = Form.useForm<FormValues>();
   const [allRarities, setAllRarities] = useState<NFTRarity[]>([]);
   const [requesting, setRequesting] = useState(false);
-  const [currentTraits, setCurrentTraits] = useState<string[]>([]);
+  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
 
-  // Load all rarities on component mount
   useEffect(() => {
-    const loadRarities = async () => {
-      const rarities = await getAllRarities();
-      setAllRarities(rarities);
-    };
-    loadRarities();
+    getAllRarities().then(setAllRarities);
   }, [getAllRarities]);
 
-  const handleRequestVerification = async (values: RarityRequestForm) => {
+  const handleSubmit = async (values: FormValues) => {
+    if (selectedTraits.length === 0) return;
+    
     setRequesting(true);
     try {
       const success = await requestRarityVerification(
         values.nftAddress,
         values.tokenId,
-        values.traits
+        selectedTraits
       );
       
       if (success) {
         form.resetFields();
-        setCurrentTraits([]);
-        // Reload rarities after a short delay to get the new entry
-        setTimeout(async () => {
-          const rarities = await getAllRarities();
-          setAllRarities(rarities);
-        }, 2000);
+        setSelectedTraits([]);
+        setTimeout(() => getAllRarities().then(setAllRarities), 2000);
       }
     } catch (error) {
-      console.error('Error requesting verification:', error);
+      console.error('Error:', error);
     } finally {
       setRequesting(false);
     }
   };
 
-  const getRarityTierInfo = (tier: string) => {
-    const tierInfo = Object.values(RARITY_TIERS).find(t => t.name === tier);
-    return tierInfo || RARITY_TIERS.COMMON;
-  };
-
-  const getRarityProgress = (score: string) => {
-    const scoreNum = parseInt(score);
-    return (scoreNum / 10000) * 100;
-  };
-
-  const addTrait = (trait: string) => {
-    if (trait && !currentTraits.includes(trait)) {
-      const newTraits = [...currentTraits, trait];
-      setCurrentTraits(newTraits);
-      form.setFieldValue('traits', newTraits);
+  const handleTraitAdd = (trait: string) => {
+    if (trait && !selectedTraits.includes(trait)) {
+      setSelectedTraits([...selectedTraits, trait]);
     }
   };
 
-  const removeTrait = (traitToRemove: string) => {
-    const newTraits = currentTraits.filter(trait => trait !== traitToRemove);
-    setCurrentTraits(newTraits);
-    form.setFieldValue('traits', newTraits);
+  const handleTraitRemove = (trait: string) => {
+    setSelectedTraits(selectedTraits.filter(t => t !== trait));
+  };
+
+  const getRarityInfo = (tier: string) => {
+    return Object.values(RARITY_TIERS).find(t => t.name === tier) || RARITY_TIERS.COMMON;
   };
 
   const columns = [
     {
-      title: 'NFT Address',
+      title: 'NFT',
       dataIndex: 'nftAddress',
       key: 'nftAddress',
-      render: (address: string) => (
-        <Text code style={{ fontSize: '12px' }}>
-          {`${address.slice(0, 6)}...${address.slice(-4)}`}
-        </Text>
-      ),
-    },
-    {
-      title: 'Token ID',
-      dataIndex: 'tokenId',
-      key: 'tokenId',
-      width: 100,
-      render: (tokenId: string) => (
-        <Text strong>#{tokenId}</Text>
+      render: (address: string, record: NFTRarity) => (
+        <div>
+          <Text code style={{ fontSize: 12 }}>{formatAddress(address)}</Text>
+          <br />
+          <Text strong>#{record.tokenId}</Text>
+        </div>
       ),
     },
     {
       title: 'Độ hiếm',
       key: 'rarity',
       render: (record: NFTRarity) => {
-        const tierInfo = getRarityTierInfo(record.rarityTier);
-        const progress = getRarityProgress(record.rarityScore);
-        
+        const info = getRarityInfo(record.rarityTier);
         return (
           <div>
-            <Tag color={tierInfo.color} style={{ marginBottom: '4px' }}>
+            <Tag color={info.color}>
               <StarOutlined /> {record.rarityTier}
             </Tag>
-            <div>
-              <Progress 
-                percent={progress} 
-                size="small" 
-                strokeColor={tierInfo.color}
-                showInfo={false}
-              />
-              <Text style={{ fontSize: '12px', color: tierInfo.color }}>
-                {record.rarityScore}/10000
-              </Text>
-            </div>
+            <br />
+            <Text style={{ fontSize: 12, color: info.color }}>
+              {record.rarityScore}/10000
+            </Text>
           </div>
         );
       },
@@ -138,12 +106,10 @@ export const RarityVerification: React.FC = () => {
       key: 'traits',
       render: (traits: string[]) => (
         <div>
-          {traits.slice(0, 3).map((trait, index) => (
-            <Tag key={index}>{trait}</Tag>
+          {traits.slice(0, 2).map((trait, i) => (
+            <Tag key={i} size="small">{trait}</Tag>
           ))}
-          {traits.length > 3 && (
-            <Tag>+{traits.length - 3}</Tag>
-          )}
+          {traits.length > 2 && <Tag size="small">+{traits.length - 2}</Tag>}
         </div>
       ),
     },
@@ -161,44 +127,24 @@ export const RarityVerification: React.FC = () => {
         </Tag>
       ),
     },
-    {
-      title: 'Thời gian',
-      dataIndex: 'timestamp',
-      key: 'timestamp',
-      render: (timestamp: string) => (
-        <Text style={{ fontSize: '12px' }}>
-          {new Date(parseInt(timestamp) * 1000).toLocaleString('vi-VN')}
-        </Text>
-      ),
-    },
-  ];
-
-  const commonTraits = [
-    'Background', 'Body', 'Eyes', 'Mouth', 'Hat', 'Clothing', 
-    'Accessories', 'Special', 'Rare', 'Legendary'
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: 24 }}>
       <Title level={2}>
         <StarOutlined /> Xác minh Độ hiếm NFT
       </Title>
       
       <Row gutter={[24, 24]}>
-        {/* Request Form */}
-        <Col xs={24} lg={10}>
-          <Card title="🎭 Yêu cầu xác minh độ hiếm">
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleRequestVerification}
-              initialValues={{ traits: [] }}
-            >
+        {/* Form */}
+        <Col xs={24} lg={12}>
+          <Card title="🎭 Yêu cầu xác minh">
+            <Form form={form} layout="vertical" onFinish={handleSubmit}>
               <Form.Item
                 label="Địa chỉ NFT Contract"
                 name="nftAddress"
                 rules={[
-                  { required: true, message: 'Vui lòng nhập địa chỉ NFT contract!' },
+                  { required: true, message: 'Vui lòng nhập địa chỉ!' },
                   { pattern: /^0x[a-fA-F0-9]{40}$/, message: 'Địa chỉ không hợp lệ!' }
                 ]}
               >
@@ -216,52 +162,31 @@ export const RarityVerification: React.FC = () => {
                 <Input placeholder="1" />
               </Form.Item>
 
-              <Form.Item label="Đặc điểm NFT">
-                <Space.Compact style={{ width: '100%' }}>
-                  <Select
-                    placeholder="Chọn đặc điểm"
-                    style={{ width: '70%' }}
-                    onSelect={(value: string | undefined) => value && addTrait(value)}
-                    value={undefined}
-                  >
-                    {commonTraits.map(trait => (
-                      <Option key={trait} value={trait}>{trait}</Option>
-                    ))}
-                  </Select>
-                  <Input
-                    placeholder="Hoặc nhập tùy chỉnh"
-                    style={{ width: '30%' }}
-                    onPressEnter={(e) => {
-                      const value = (e.target as HTMLInputElement).value.trim();
-                      if (value) {
-                        addTrait(value);
-                        (e.target as HTMLInputElement).value = '';
-                      }
-                    }}
-                  />
-                </Space.Compact>
-              </Form.Item>
-
-              {currentTraits.length > 0 && (
-                <div style={{ marginBottom: '16px' }}>
-                  <Text strong>Đặc điểm đã chọn:</Text>
-                  <div style={{ marginTop: '8px' }}>
-                    {currentTraits.map((trait, index) => (
+              <Form.Item label="Đặc điểm">
+                <Select
+                  placeholder="Chọn đặc điểm"
+                  onSelect={handleTraitAdd}
+                  value={undefined}
+                >
+                  {COMMON_TRAITS.map(trait => (
+                    <Option key={trait} value={trait}>{trait}</Option>
+                  ))}
+                </Select>
+                
+                {selectedTraits.length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    {selectedTraits.map((trait, i) => (
                       <Tag
-                        key={index}
+                        key={i}
                         closable
-                        onClose={() => removeTrait(trait)}
-                        style={{ marginBottom: '4px' }}
+                        onClose={() => handleTraitRemove(trait)}
+                        style={{ marginBottom: 4 }}
                       >
                         {trait}
                       </Tag>
                     ))}
                   </div>
-                </div>
-              )}
-
-              <Form.Item name="traits" hidden>
-                <Input />
+                )}
               </Form.Item>
 
               <Form.Item>
@@ -269,38 +194,39 @@ export const RarityVerification: React.FC = () => {
                   type="primary"
                   htmlType="submit"
                   loading={requesting}
-                  disabled={currentTraits.length === 0}
+                  disabled={selectedTraits.length === 0}
                   block
                 >
-                  Yêu cầu xác minh độ hiếm
+                  Yêu cầu xác minh
                 </Button>
               </Form.Item>
             </Form>
           </Card>
         </Col>
 
-        {/* Rarity Tiers Info */}
-        <Col xs={24} lg={14}>
-          <Card title="🏆 Bảng xếp hạng độ hiếm">
-            <Row gutter={[16, 16]}>
-              {Object.values(RARITY_TIERS).map((tier, index) => (
-                <Col xs={24} sm={12} key={index}>
-                  <Card size="small" style={{ 
-                    background: `${tier.color}15`, 
-                    border: `1px solid ${tier.color}40` 
-                  }}>
-                    <Space align="center">
-                      <StarOutlined style={{ color: tier.color, fontSize: '18px' }} />
-                      <div>
-                        <Text strong style={{ color: tier.color }}>
-                          {tier.name}
-                        </Text>
-                        <br />
-                        <Text style={{ fontSize: '12px' }}>
-                          {tier.minScore} - {tier.maxScore}
-                        </Text>
-                      </div>
-                    </Space>
+        {/* Rarity Tiers */}
+        <Col xs={24} lg={12}>
+          <Card title="🏆 Bảng xếp hạng">
+            <Row gutter={[8, 8]}>
+              {Object.values(RARITY_TIERS).map((tier, i) => (
+                <Col xs={12} sm={8} key={i}>
+                  <Card 
+                    size="small" 
+                    style={{ 
+                      background: `${tier.color}15`, 
+                      border: `1px solid ${tier.color}40`,
+                      textAlign: 'center'
+                    }}
+                  >
+                    <StarOutlined style={{ color: tier.color, fontSize: 16 }} />
+                    <br />
+                    <Text strong style={{ color: tier.color, fontSize: 12 }}>
+                      {tier.name}
+                    </Text>
+                    <br />
+                    <Text style={{ fontSize: 10 }}>
+                      {tier.minScore}-{tier.maxScore}
+                    </Text>
                   </Card>
                 </Col>
               ))}
@@ -309,17 +235,14 @@ export const RarityVerification: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Rarities Table */}
+      {/* Table */}
       <Card 
-        title="📋 Danh sách NFT đã xác minh" 
-        style={{ marginTop: '24px' }}
+        title="📋 NFT đã xác minh" 
+        style={{ marginTop: 24 }}
         extra={
           <Button 
             type="link" 
-            onClick={async () => {
-              const rarities = await getAllRarities();
-              setAllRarities(rarities);
-            }}
+            onClick={() => getAllRarities().then(setAllRarities)}
           >
             Làm mới
           </Button>
@@ -329,21 +252,15 @@ export const RarityVerification: React.FC = () => {
           dataSource={allRarities}
           columns={columns}
           rowKey={(record) => `${record.nftAddress}-${record.tokenId}`}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total) => `Tổng ${total} NFT`,
-          }}
+          pagination={{ pageSize: 10, showTotal: (total) => `Tổng ${total} NFT` }}
           loading={isLoading}
-          scroll={{ x: 800 }}
+          size="small"
+          scroll={{ x: 600 }}
         />
 
         {allRarities.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <Text type="secondary">
-              Chưa có NFT nào được xác minh độ hiếm
-            </Text>
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <Text type="secondary">Chưa có NFT nào được xác minh</Text>
           </div>
         )}
       </Card>

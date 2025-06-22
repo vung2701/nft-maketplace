@@ -10,15 +10,31 @@ export const ROUTES = {
 	PRICING: '/pricing',
 } as const;
 
-// Contract Addresses - Deployed on Sepolia
+// Debug env variables
+console.log('🔍 Environment Variables Debug:');
+console.log('VITE_MARKETPLACE_ADDRESS:', import.meta.env.VITE_MARKETPLACE_ADDRESS);
+console.log('VITE_AUTOMATED_REWARDS_ADDRESS:', import.meta.env.VITE_AUTOMATED_REWARDS_ADDRESS);
+console.log('VITE_DYNAMIC_PRICING_ADDRESS:', import.meta.env.VITE_DYNAMIC_PRICING_ADDRESS);
+console.log('VITE_RARITY_VERIFICATION_ADDRESS:', import.meta.env.VITE_RARITY_VERIFICATION_ADDRESS);
+
+// Contract Addresses - với fallback values
 export const CONTRACT_ADDRESSES = {
-	MARKETPLACE: import.meta.env.VITE_MARKETPLACE_ADDRESS,
-	NFT_COLLECTION: import.meta.env.VITE_NFT_COLLECTION_ADDRESS,
-	DYNAMIC_PRICING: import.meta.env.VITE_DYNAMIC_PRICING_ADDRESS,
-	AUTOMATED_REWARDS: import.meta.env.VITE_AUTOMATED_REWARDS_ADDRESS,
-	RARITY_VERIFICATION: import.meta.env.VITE_RARITY_VERIFICATION_ADDRESS,
-	REWARD_TOKEN: import.meta.env.VITE_REWARD_TOKEN_ADDRESS,
+	MARKETPLACE: import.meta.env.VITE_MARKETPLACE_ADDRESS || '0x1234567890123456789012345678901234567890',
+	NFT_COLLECTION: import.meta.env.VITE_NFT_COLLECTION_ADDRESS || '0x2345678901234567890123456789012345678901',
+	DYNAMIC_PRICING: import.meta.env.VITE_DYNAMIC_PRICING_ADDRESS || '0x4567890123456789012345678901234567890123',
+	AUTOMATED_REWARDS: import.meta.env.VITE_AUTOMATED_REWARDS_ADDRESS || '0x5678901234567890123456789012345678901234',
+	RARITY_VERIFICATION: import.meta.env.VITE_RARITY_VERIFICATION_ADDRESS || '0x6789012345678901234567890123456789012345',
+	REWARD_TOKEN: import.meta.env.VITE_REWARD_TOKEN_ADDRESS || '0x3456789012345678901234567890123456789012',
 } as const;
+
+// Log contract addresses
+console.log('📦 Contract Addresses Loaded:');
+Object.entries(CONTRACT_ADDRESSES).forEach(([key, value]) => {
+	const isDefault = value?.startsWith('0x123') || value?.startsWith('0x234') ||
+		value?.startsWith('0x345') || value?.startsWith('0x456') ||
+		value?.startsWith('0x567') || value?.startsWith('0x678');
+	console.log(`${key}:`, value, isDefault ? '(default/fallback)' : '(from env)');
+});
 
 // Các message thông báo
 export const MESSAGES = {
@@ -40,6 +56,7 @@ export const MESSAGES = {
 	FEE_PAYMENT_FAILED: 'Lỗi khi thanh toán phí: ',
 	PRICE_UPDATE_SUCCESS: 'Cập nhật giá thành công 📊',
 	PRICE_UPDATE_FAILED: 'Lỗi khi cập nhật giá: ',
+	ENV_NOT_FOUND: '⚠️ File .env không tìm thấy! Đang sử dụng giá trị mặc định.',
 } as const;
 
 // Các bước trong quá trình mint

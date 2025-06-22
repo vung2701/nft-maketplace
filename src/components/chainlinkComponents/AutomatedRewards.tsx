@@ -1,195 +1,184 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Typography, Space, Statistic, Row, Col, Badge, Progress, Tabs } from 'antd';
+import { Card, Table, Typography, Statistic, Row, Col, Badge, Progress, Alert } from 'antd';
 import { TrophyOutlined, GiftOutlined, CrownOutlined, FireOutlined } from '@ant-design/icons';
 import { useAccount } from 'wagmi';
 import { useChainlinkContracts } from '../../hooks/useChainlinkContracts';
-import type { UserReward, RewardDistribution, UserActivity } from '../../types';
+import { isMockData } from './utils';
+import type { UserReward } from '../../types';
 
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 
-export const AutomatedRewards: React.FC = () => {
+// Utility functions với ES6
+const formatAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`;
+const formatNumber = (num, decimals = 4) => parseFloat(num.toString()).toFixed(decimals);
+
+// ES6 Object với computed properties
+const RANK_CONFIGS = {
+  1: { icon: CrownOutlined, color: '#FFD700' },
+  2: { icon: TrophyOutlined, color: '#C0C0C0' },
+  3: { icon: TrophyOutlined, color: '#CD7F32' },
+  default: { icon: FireOutlined, color: '#1890ff' }
+};
+
+export const AutomatedRewards = () => {
   const { address } = useAccount();
-  const {
-    userActivity,
-    userRewards,
-    getTopTraders,
-    getRewardHistory,
-    isLoading
-  } = useChainlinkContracts();
-
+  const { userActivity, userRewards, getTopTraders, isLoading } = useChainlinkContracts();
   const [topTraders, setTopTraders] = useState<UserReward[]>([]);
-  const [rewardHistory, setRewardHistory] = useState<RewardDistribution[]>([]);
 
-  // Load data on component mount
+  // ES6 useEffect with arrow function
   useEffect(() => {
-    const loadData = async () => {
-      const [traders, history] = await Promise.all([
-        getTopTraders(),
-        getRewardHistory()
-      ]);
-      setTopTraders(traders);
-      setRewardHistory(history);
-    };
-    loadData();
-  }, [getTopTraders, getRewardHistory]);
+    getTopTraders().then(setTopTraders);
+  }, [getTopTraders]);
 
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1: return <CrownOutlined style={{ color: '#FFD700' }} />;
-      case 2: return <TrophyOutlined style={{ color: '#C0C0C0' }} />;
-      case 3: return <TrophyOutlined style={{ color: '#CD7F32' }} />;
-      default: return <FireOutlined style={{ color: '#1890ff' }} />;
-    }
-  };
+  // ES6 arrow function with default parameter
+  const getRankConfig = (rank) => RANK_CONFIGS[rank] || RANK_CONFIGS.default;
 
-  const getRankColor = (rank: number) => {
-    switch (rank) {
-      case 1: return 'gold';
-      case 2: return 'silver';
-      case 3: return '#CD7F32';
-      default: return '#1890ff';
-    }
-  };
-
-  const leaderboardColumns = [
+  // ES6 Array methods và destructuring
+  const columns = [
     {
       title: 'Hạng',
       dataIndex: 'rank',
       key: 'rank',
       width: 80,
-      render: (rank: number) => (
-        <Space>
-          {getRankIcon(rank)}
-          <Text strong style={{ color: getRankColor(rank) }}>#{rank}</Text>
-        </Space>
-      ),
+      render: (rank) => {
+        const { icon: IconComponent, color } = getRankConfig(rank);
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <IconComponent style={{ color }} />
+            <Text strong style={{ color }}>#{rank}</Text>
+          </div>
+        );
+      },
     },
     {
       title: 'Trader',
       dataIndex: 'user',
       key: 'user',
-      render: (userAddress: string) => (
+      render: (userAddress) => (
         <div>
-          <Text code style={{ fontSize: '12px' }}>
-            {`${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`}
-          </Text>
+          <Text code style={{ fontSize: 12 }}>{formatAddress(userAddress)}</Text>
           {userAddress.toLowerCase() === address?.toLowerCase() && (
-            <Badge status="processing" text="Bạn" style={{ marginLeft: '8px' }} />
+            <Badge status="processing" text="Bạn" style={{ marginLeft: 8 }} />
           )}
         </div>
       ),
     },
     {
-      title: 'Volume Trading',
+      title: 'Volume',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount: string) => (
-        <Text strong>{parseFloat(amount).toFixed(4)} ETH</Text>
-      ),
+      render: (amount) => <Text strong>{formatNumber(amount)} ETH</Text>,
     },
     {
-      title: 'Tỷ lệ %',
+      title: '%',
       dataIndex: 'percentage',
       key: 'percentage',
-      render: (percentage: string, record: UserReward) => (
-        <div>
-          <Progress 
-            percent={parseFloat(percentage)} 
-            size="small" 
-            strokeColor={getRankColor(record.rank)}
-            showInfo={false}
-          />
-          <Text style={{ color: getRankColor(record.rank) }}>{percentage}%</Text>
-        </div>
-      ),
+      render: (percentage, record) => {
+        const { color } = getRankConfig(record.rank);
+        return (
+          <div>
+            <Progress 
+              percent={parseFloat(percentage)} 
+              size="small" 
+              strokeColor={color}
+              showInfo={false}
+            />
+            <Text style={{ color }}>{percentage}%</Text>
+          </div>
+        );
+      },
     },
   ];
 
+  // ES6 Object shorthand và template literals
+  const statsData = [
+    {
+      title: "Rewards",
+      value: formatNumber(userRewards),
+      suffix: "REWARD",
+      color: "#52c41a",
+      icon: GiftOutlined
+    },
+    {
+      title: "Volume", 
+      value: formatNumber(userActivity?.tradingVolume || "0"),
+      suffix: "ETH",
+      color: "#1890ff",
+      icon: FireOutlined
+    },
+    {
+      title: "Giao dịch",
+      value: userActivity?.transactionCount || 0,
+      suffix: "",
+      color: "#fa8c16", 
+      icon: TrophyOutlined
+    }
+  ];
+
+  // Check if using mock data
+  const isUsingMockData = isMockData(topTraders);
+
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: 24 }}>
       <Title level={2}>
-        <GiftOutlined /> Hệ thống Rewards Tự động
+        <GiftOutlined /> Hệ thống Rewards
       </Title>
       
-      {/* User Stats */}
-      <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Reward Balance"
-              value={parseFloat(userRewards)}
-              precision={4}
-              suffix="REWARD"
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<GiftOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Trading Volume"
-              value={userActivity?.tradingVolume ? parseFloat(userActivity.tradingVolume) : 0}
-              precision={4}
-              suffix="ETH"
-              valueStyle={{ color: '#1890ff' }}
-              prefix={<FireOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Giao dịch"
-              value={userActivity?.transactionCount || 0}
-              valueStyle={{ color: '#fa8c16' }}
-              prefix={<TrophyOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Hoạt động cuối"
-              value={userActivity?.lastActive ? 
-                new Date(parseInt(userActivity.lastActive) * 1000).toLocaleDateString('vi-VN') : 
-                'Chưa có'
-              }
-              valueStyle={{ color: '#722ed1', fontSize: '14px' }}
-            />
-          </Card>
-        </Col>
+      {/* Mock Data Warning */}
+      {isUsingMockData && (
+        <Alert
+          message="Demo Mode"
+          description="Smart contract chưa được deploy. Đang hiển thị dữ liệu demo."
+          type="warning"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
+      )}
+      
+      {/* User Stats với ES6 map */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {statsData.map((stat, index) => {
+          const { icon: IconComponent, ...restStat } = stat;
+          return (
+            <Col xs={24} sm={8} key={index}>
+              <Card>
+                <Statistic
+                  {...restStat}
+                  precision={typeof stat.value === 'string' ? 4 : 0}
+                  valueStyle={{ color: stat.color }}
+                  prefix={<IconComponent />}
+                />
+              </Card>
+            </Col>
+          );
+        })}
       </Row>
 
-      <Card 
-        title="🏆 Top Traders - Tuần này"
-        extra={
-          <Text type="secondary">
-            Rewards sẽ được phân phối tự động mỗi tuần
-          </Text>
-        }
-      >
+      {/* Leaderboard */}
+      <Card title="🏆 Top Traders">
         <Table
           dataSource={topTraders}
-          columns={leaderboardColumns}
+          columns={columns}
           rowKey="user"
           pagination={false}
           loading={isLoading}
+          size="small"
           rowClassName={(record) => 
             record.user.toLowerCase() === address?.toLowerCase() ? 'highlight-row' : ''
           }
         />
         
+        {/* ES6 conditional rendering */}
         {topTraders.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{ textAlign: 'center', padding: 40 }}>
             <Text type="secondary">
-              Chưa có dữ liệu trading. Bắt đầu giao dịch để tham gia xếp hạng!
+              Chưa có dữ liệu. Bắt đầu giao dịch để tham gia xếp hạng!
             </Text>
           </div>
         )}
       </Card>
 
+      {/* ES6 template literals trong CSS */}
       <style>{`
         .highlight-row {
           background-color: #e6f7ff !important;

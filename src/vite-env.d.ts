@@ -7,7 +7,7 @@ interface ImportMetaEnv {
 	readonly VITE_NFT_COLLECTION_ADDRESS?: string,
 	readonly VITE_REWARD_TOKEN_ADDRESS?: string,
 	readonly VITE_DYNAMIC_PRICING_ADDRESS?: string,
-	readonly VITE_AUTOMATED_REWWARDS_ADDRESS?: string,
+	readonly VITE_AUTOMATED_REWARDS_ADDRESS?: string,
 	readonly VITE_RARITY_VERIFICATION_ADDRESS?: string,
 	readonly VITE_WALLET_CONNECT_PROJECT_ID?: string,
 	readonly VITE_BE_SEPOLIA_URL?: string,
