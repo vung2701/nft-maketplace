@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Input, Button, Table, Typography, Tag, Row, Col, Form, Select } from 'antd';
 import { StarOutlined, CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useChainlinkContracts } from '../../hooks/useChainlinkContracts';
@@ -31,6 +31,24 @@ export const RarityVerification = () => {
   useEffect(() => {
     getAllRarities().then(setAllRarities);
   }, [getAllRarities]);
+
+  // ES6 computed statistics với array methods
+  const rarityStats = useMemo(() => {
+    const total = allRarities.length;
+    if (total === 0) return null;
+
+    const tierCounts = Object.values(RARITY_TIERS).reduce((acc, tier) => {
+      acc[tier.name] = allRarities.filter(r => r.rarityTier === tier.name).length;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      total,
+      tierCounts,
+      averageScore: Math.round(allRarities.reduce((sum, r) => sum + (r.rarityScore || 0), 0) / total),
+      highestScore: Math.max(...allRarities.map(r => r.rarityScore || 0))
+    };
+  }, [allRarities]);
 
   const handleSubmit = async (values: FormValues) => {
     if (selectedTraits.length === 0) return;
@@ -134,6 +152,49 @@ export const RarityVerification = () => {
       <Title level={2}>
         <StarOutlined /> Xác minh Độ hiếm NFT
       </Title>
+      
+      {/* Thêm Rarity Statistics */}
+      {rarityStats && (
+        <Card title="📊 Thống kê độ hiếm" style={{ marginBottom: 24 }}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={6}>
+              <div style={{ textAlign: 'center' }}>
+                <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
+                  {rarityStats.total}
+                </Title>
+                <Text>Tổng NFT</Text>
+              </div>
+            </Col>
+            <Col xs={24} sm={6}>
+              <div style={{ textAlign: 'center' }}>
+                <Title level={3} style={{ margin: 0, color: '#52c41a' }}>
+                  {rarityStats.averageScore}
+                </Title>
+                <Text>Điểm TB</Text>
+              </div>
+            </Col>
+            <Col xs={24} sm={6}>
+              <div style={{ textAlign: 'center' }}>
+                <Title level={3} style={{ margin: 0, color: '#fa8c16' }}>
+                  {rarityStats.highestScore}
+                </Title>
+                <Text>Điểm cao nhất</Text>
+              </div>
+            </Col>
+            <Col xs={24} sm={6}>
+              <div style={{ textAlign: 'center' }}>
+                {Object.entries(rarityStats.tierCounts).map(([tier, count]) => (
+                  <div key={tier} style={{ marginBottom: 4 }}>
+                    <Tag color={getRarityInfo(tier).color} size="small">
+                      {tier}: {count}
+                    </Tag>
+                  </div>
+                ))}
+              </div>
+            </Col>
+          </Row>
+        </Card>
+      )}
       
       <Row gutter={[24, 24]}>
         {/* Form */}

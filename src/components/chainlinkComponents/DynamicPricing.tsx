@@ -1,73 +1,84 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Input, Button, Table, Typography, Statistic, Row, Col } from 'antd';
-import { DollarOutlined, LineChartOutlined, CalculatorOutlined } from '@ant-design/icons';
+import { Card, Table, Typography, Statistic, Row, Col, Button, Progress, Tag, Alert } from 'antd';
+import { DollarOutlined, LineChartOutlined, FireOutlined, ClockCircleOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useChainlinkContracts } from '../../hooks/useChainlinkContracts';
-import type { Transaction, FeeCalculation } from '../../types';
+import { 
+  fetchMarketData, 
+  fetchRealTimeGas, 
+  fetchDeFiData,
+  formatCurrency,
+  formatLargeNumber 
+} from '../../services/realTimeData';
+import type { Transaction } from '../../types';
 
 const { Title, Text } = Typography;
 
-// ES6 Utility functions với arrow functions và default parameters
+// ES6 Utility functions
 const formatAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`;
-const formatNumber = (num, decimals = 4) => parseFloat(num.toString()).toFixed(decimals);
 const formatDate = (timestamp) => new Date(parseInt(timestamp) * 1000).toLocaleString('vi-VN');
 
-export const DynamicPricing = () => {
-  const { ethPrice, calculateFee, payFee, getAllTransactions, isLoading } = useChainlinkContracts();
-  
-  // ES6 destructuring với default values
-  const [ethAmount, setEthAmount] = useState('');
-  const [feeCalculation, setFeeCalculation] = useState<FeeCalculation | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [calculating, setCalculating] = useState(false);
-  const [paying, setPaying] = useState(false);
+// Network congestion level based on real gas prices
+const getNetworkStatus = (gasFee) => {
+  if (gasFee < 15) return { status: 'Thấp', color: 'success' as const, level: 25 };
+  if (gasFee < 30) return { status: 'Trung bình', color: 'normal' as const, level: 50 };
+  if (gasFee < 50) return { status: 'Cao', color: 'normal' as const, level: 75 };
+  return { status: 'Rất cao', color: 'exception' as const, level: 95 };
+};
 
-  // ES6 useEffect với arrow functions
+export const DynamicPricing = () => {
+  const { getAllTransactions, isLoading } = useChainlinkContracts();
+  
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [marketData, setMarketData] = useState<any>(null);
+  const [gasFees, setGasFees] = useState<any>(null);
+  const [defiData, setDefiData] = useState<any[]>([]);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch real-world data
+  const fetchAllData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const [market, gas, defi] = await Promise.all([
+        fetchMarketData(),
+        fetchRealTimeGas(), 
+        fetchDeFiData()
+      ]);
+      
+      setMarketData(market);
+      setGasFees(gas);
+      setDefiData(defi);
+      setLastUpdate(new Date());
+    } catch (err) {
+      setError('Không thể tải dữ liệu real-time. Hiển thị dữ liệu fallback.');
+      console.error('Error fetching real data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto refresh every 2 minutes
+  useEffect(() => {
+    fetchAllData();
+    
+    const interval = setInterval(() => {
+      fetchAllData();
+    }, 120000); // 2 minutes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Load transactions
   useEffect(() => {
     getAllTransactions().then(setTransactions);
   }, [getAllTransactions]);
 
-  // ES6 debounce với arrow function
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (ethAmount && parseFloat(ethAmount) > 0) {
-        setCalculating(true);
-        try {
-          const calculation = await calculateFee(ethAmount);
-          setFeeCalculation(calculation);
-        } catch (error) {
-          console.error('Error calculating fee:', error);
-        } finally {
-          setCalculating(false);
-        }
-      } else {
-        setFeeCalculation(null);
-      }
-    }, 500);
+  const networkStatus = gasFees ? getNetworkStatus(gasFees.standard.fee) : null;
 
-    return () => clearTimeout(timer);
-  }, [ethAmount, calculateFee]);
-
-  // ES6 async/await với arrow function
-  const handlePayFee = async () => {
-    if (!ethAmount || parseFloat(ethAmount) <= 0) return;
-    
-    setPaying(true);
-    try {
-      const success = await payFee(ethAmount);
-      if (success) {
-        const txs = await getAllTransactions();
-        setTransactions(txs);
-        setEthAmount('');
-        setFeeCalculation(null);
-      }
-    } catch (error) {
-      console.error('Error paying fee:', error);
-    } finally {
-      setPaying(false);
-    }
-  };
-
-  // ES6 Array với arrow functions trong render
+  // Transaction history columns
   const columns = [
     {
       title: 'Người dùng',
@@ -79,19 +90,19 @@ export const DynamicPricing = () => {
       title: 'ETH',
       dataIndex: 'amountETH',
       key: 'amountETH',
-      render: (amount) => <Text strong>{formatNumber(amount)} ETH</Text>,
+      render: (amount) => <Text strong>{parseFloat(amount).toFixed(4)} ETH</Text>,
     },
     {
       title: 'USD',
       dataIndex: 'amountUSD',
       key: 'amountUSD',
-      render: (amount) => <Text>${formatNumber(amount, 2)}</Text>,
+      render: (amount) => <Text>{formatCurrency(amount)}</Text>,
     },
     {
-      title: 'Phí',
+      title: 'Gas Fee',
       dataIndex: 'feeETH',
       key: 'feeETH',
-      render: (fee) => <Text type="warning">{formatNumber(fee, 6)} ETH</Text>,
+      render: (fee) => <Text type="warning">{parseFloat(fee).toFixed(6)} ETH</Text>,
     },
     {
       title: 'Thời gian',
@@ -101,85 +112,219 @@ export const DynamicPricing = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div style={{ padding: 24, textAlign: 'center' }}>
+        <Title level={3}>Đang tải dữ liệu real-time...</Title>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 24 }}>
       <Title level={2}>
-        <LineChartOutlined /> Dynamic Pricing
+        <LineChartOutlined /> Real-time Market Data
       </Title>
+
+      {error && (
+        <Alert
+          message="Cảnh báo"
+          description={error}
+          type="warning"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
+      )}
       
       <Row gutter={[24, 24]}>
-        {/* Price Display */}
-        <Col xs={24} lg={8}>
+        {/* ETH Price & Market Data */}
+        <Col xs={24} md={8}>
           <Card>
             <Statistic
               title="Giá ETH/USD"
-              value={formatNumber(ethPrice, 2)}
+              value={marketData?.price || 0}
               prefix={<DollarOutlined />}
-              suffix="USD"
-              valueStyle={{ color: '#1890ff' }}
+              precision={2}
+              valueStyle={{ 
+                color: marketData?.change24h >= 0 ? '#52c41a' : '#ff4d4f' 
+              }}
             />
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Từ Chainlink Oracle
+                         <div style={{ marginTop: 8 }}>
+               {marketData?.change24h >= 0 ? (
+                 <RiseOutlined style={{ color: '#52c41a', marginRight: 4 }} />
+               ) : (
+                 <FallOutlined style={{ color: '#ff4d4f', marginRight: 4 }} />
+               )}
+              <Text style={{ 
+                color: marketData?.change24h >= 0 ? '#52c41a' : '#ff4d4f',
+                fontSize: 12 
+              }}>
+                {marketData?.change24h >= 0 ? '+' : ''}{marketData?.change24h?.toFixed(2)}% (24h)
+              </Text>
+            </div>
+            <Text type="secondary" style={{ fontSize: 11 }}>
+              Market Cap: {formatLargeNumber(marketData?.marketCap || 0)}
             </Text>
           </Card>
         </Col>
 
-        {/* Fee Calculator */}
-        <Col xs={24} lg={16}>
-          <Card title={<><CalculatorOutlined /> Tính phí giao dịch</>}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <Input
-                placeholder="Nhập số ETH"
-                value={ethAmount}
-                onChange={(e) => setEthAmount(e.target.value)}
-                suffix="ETH"
-                style={{ flex: 1 }}
-              />
-              <Button
-                type="primary"
-                onClick={handlePayFee}
-                loading={paying}
-                disabled={!feeCalculation || parseFloat(ethAmount) <= 0}
-              >
-                Thanh toán
-              </Button>
+        {/* Network Status */}
+        <Col xs={24} md={8}>
+          <Card>
+            <div style={{ textAlign: 'center' }}>
+              <Text strong>Network Congestion</Text>
+              <br />
+              {networkStatus && (
+                <>
+                  <Progress 
+                    percent={networkStatus.level} 
+                    status={networkStatus.color}
+                    strokeColor={
+                      networkStatus.color === 'success' ? '#52c41a' :
+                      networkStatus.color === 'normal' ? '#faad14' : '#ff4d4f'
+                    }
+                    style={{ marginTop: 8 }}
+                  />
+                  <Tag color={
+                    networkStatus.color === 'success' ? 'green' :
+                    networkStatus.color === 'normal' ? 'orange' : 'red'
+                  } style={{ marginTop: 8 }}>
+                    {networkStatus.status}
+                  </Tag>
+                </>
+              )}
             </div>
+          </Card>
+        </Col>
 
-            {/* ES6 conditional rendering */}
-            {calculating && <Text type="secondary">Đang tính toán...</Text>}
-
-            {/* ES6 conditional rendering với object destructuring */}
-            {feeCalculation && (
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Card size="small" style={{ background: '#f6ffed' }}>
-                    <Statistic
-                      title="Phí ETH (2%)"
-                      value={formatNumber(feeCalculation.feeETH, 6)}
-                      suffix="ETH"
-                      valueStyle={{ color: '#52c41a', fontSize: 16 }}
-                    />
-                  </Card>
-                </Col>
-                <Col span={12}>
-                  <Card size="small" style={{ background: '#fff7e6' }}>
-                    <Statistic
-                      title="Phí USD"
-                      value={formatNumber(feeCalculation.feeUSD, 2)}
-                      prefix="$"
-                      valueStyle={{ color: '#fa8c16', fontSize: 16 }}
-                    />
-                  </Card>
-                </Col>
-              </Row>
-            )}
+        {/* Last Update */}
+        <Col xs={24} md={8}>
+          <Card>
+            <Statistic
+              title="Cập nhật lần cuối"
+              value={lastUpdate.toLocaleTimeString('vi-VN')}
+              prefix={<ClockCircleOutlined />}
+              valueStyle={{ fontSize: 16 }}
+            />
+            <Button 
+              type="link" 
+              size="small"
+              loading={loading}
+              onClick={fetchAllData}
+            >
+              Làm mới ngay
+            </Button>
           </Card>
         </Col>
       </Row>
 
+      {/* Real Gas Fee Estimates */}
+      <Card title={<><FireOutlined /> Real-time Gas Fees</>} style={{ marginTop: 24 }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ background: '#f6ffed', border: '1px solid #b7eb8f' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Text strong style={{ color: '#52c41a' }}>🐌 Slow</Text>
+                <br />
+                <Title level={4} style={{ color: '#52c41a', margin: '8px 0' }}>
+                  {gasFees?.slow?.fee || 0} gwei
+                </Title>
+                <Text type="secondary">{gasFees?.slow?.time}</Text>
+                <br />
+                <Text style={{ fontSize: 11, color: '#666' }}>
+                  ~{formatCurrency(gasFees?.slow?.usd || 0)}
+                </Text>
+              </div>
+            </Card>
+          </Col>
+          
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ background: '#fff7e6', border: '1px solid #ffd591' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Text strong style={{ color: '#fa8c16' }}>⚡ Standard</Text>
+                <br />
+                <Title level={4} style={{ color: '#fa8c16', margin: '8px 0' }}>
+                  {gasFees?.standard?.fee || 0} gwei
+                </Title>
+                <Text type="secondary">{gasFees?.standard?.time}</Text>
+                <br />
+                <Text style={{ fontSize: 11, color: '#666' }}>
+                  ~{formatCurrency(gasFees?.standard?.usd || 0)}
+                </Text>
+              </div>
+            </Card>
+          </Col>
+          
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ background: '#fff2f0', border: '1px solid #ffb3b3' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Text strong style={{ color: '#ff4d4f' }}>🚀 Fast</Text>
+                <br />
+                <Title level={4} style={{ color: '#ff4d4f', margin: '8px 0' }}>
+                  {gasFees?.fast?.fee || 0} gwei
+                </Title>
+                <Text type="secondary">{gasFees?.fast?.time}</Text>
+                <br />
+                <Text style={{ fontSize: 11, color: '#666' }}>
+                  ~{formatCurrency(gasFees?.fast?.usd || 0)}
+                </Text>
+              </div>
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ background: '#f9f0ff', border: '1px solid #d3adf7' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Text strong style={{ color: '#722ed1' }}>⚡ Fastest</Text>
+                <br />
+                <Title level={4} style={{ color: '#722ed1', margin: '8px 0' }}>
+                  {gasFees?.fastest?.fee || 0} gwei
+                </Title>
+                <Text type="secondary">{gasFees?.fastest?.time}</Text>
+                <br />
+                <Text style={{ fontSize: 11, color: '#666' }}>
+                  ~{formatCurrency(gasFees?.fastest?.usd || 0)}
+                </Text>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+        
+        <div style={{ marginTop: 16, padding: 12, background: '#fafafa', borderRadius: 6 }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            💡 <strong>Real Data:</strong> Gas fees được cập nhật từ Etherscan & ETH Gas Station. 
+            Giá ETH từ CoinGecko API. Dữ liệu refresh mỗi 2 phút.
+          </Text>
+        </div>
+      </Card>
+
+      {/* Top DeFi Protocols */}
+      {defiData.length > 0 && (
+        <Card title="🏦 Top DeFi Protocols trên Ethereum" style={{ marginTop: 24 }}>
+          <Row gutter={[16, 16]}>
+            {defiData.slice(0, 6).map((protocol, index) => (
+              <Col xs={24} sm={12} md={8} key={protocol.name}>
+                <Card size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <Text strong>#{index + 1} {protocol.name}</Text>
+                    <br />
+                    <Title level={5} style={{ margin: '4px 0', color: '#1890ff' }}>
+                      {formatLargeNumber(protocol.tvl)}
+                    </Title>
+                    <Text type="secondary" style={{ fontSize: 11 }}>
+                      TVL • {protocol.category}
+                    </Text>
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Card>
+      )}
+
       {/* Transaction History */}
       <Card 
-        title="Lịch sử giao dịch" 
+        title="Lịch sử giao dịch gần đây" 
         style={{ marginTop: 24 }}
         extra={
           <Button 

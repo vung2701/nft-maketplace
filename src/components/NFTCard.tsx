@@ -1,126 +1,120 @@
-import React, { useState } from 'react';
-import { Card, Button, Input, Space, Tag } from 'antd';
-import { StarOutlined } from '@ant-design/icons';
-import { NFTItem } from '../types';
-import { DEFAULT_VALUES, COLORS, RARITY_TIERS } from '../constants';
-import { IPFSImage } from './moralisComponents/IPFSImage';
-import { fixPinataUrl } from '../utils/web3';
+import React from 'react';
+import { Card, Tag, Avatar, Button, Typography, Row, Col } from 'antd';
+import { EyeOutlined, StarOutlined, UserOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import type { NFTItem } from '../types/nft';
+
+const { Meta } = Card;
+const { Text } = Typography;
 
 interface NFTCardProps {
   nft: NFTItem;
-  showStatus?: boolean;
-  customAction?: React.ReactNode;
-  onBuy?: () => void;
-  onList?: (price: string) => void;
+  onBuy?: (nft: NFTItem) => void;
+  onView?: (nft: NFTItem) => void;
 }
 
-interface CardAction {
-  key: string;
-  content: React.ReactNode;
-}
+// ES6 utility functions với arrow functions
+const formatAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(-4)}`;
+const formatPrice = (price: string) => `${price} ETH`;
 
-export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction, onBuy, onList }) => {
-  const [price, setPrice] = useState('');
+export const NFTCard: React.FC<NFTCardProps> = ({ nft, onBuy, onView }) => {
+  // Parse metadata để lấy rarity nếu có
+  const metadata = typeof nft.metadata === 'string' ? JSON.parse(nft.metadata || '{}') : nft.metadata || {};
+  const rarity = metadata.rarity;
+  const attributes = metadata.attributes || [];
 
-  // Lấy thông tin rarity tier
-  const getRarityTierInfo = (tier: string) => {
-    const tierInfo = Object.values(RARITY_TIERS).find(t => t.name === tier);
-    return tierInfo || RARITY_TIERS.COMMON;
-  };
-
-  // Xử lý các actions của card
-  const getCardActions = (): CardAction[] => {
-    const actions: CardAction[] = [];
-
-    if (onBuy) {
-      actions.push({
-        key: 'buy',
-        content: (
-          <div style={{ padding: '0 16px 16px' }}>
-            <Button type="primary" onClick={onBuy} style={{ width: '100%' }}>
-              Mua
-            </Button>
-          </div>
-        )
-      });
-    }
-
-    if (onList) {
-      actions.push({
-        key: 'list',
-        content: (
-          <div style={{ padding: '0 16px 16px', width: '100%' }}>
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Input
-                placeholder="Giá (ETH)"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                onPressEnter={() => onList(price)}
-                style={{ width: '100%' }}
-              />
-              <Button type="primary" onClick={() => onList(price)} style={{ width: '100%' }}>
-                List vào Marketplace
-              </Button>
-            </Space>
-          </div>
-        )
-      });
-    }
-
-    return actions;
-  };
+  // ES6 find method để lấy specific attributes
+  const rarityAttr = attributes.find(attr => attr.trait_type === 'Rarity');
 
   return (
     <Card
+      hoverable
+      style={{ width: 300, margin: 16 }}
       cover={
         <div style={{ position: 'relative' }}>
-          <IPFSImage
-            alt={nft.name}
-            src={fixPinataUrl(nft.image)}
-            style={{
-              height: DEFAULT_VALUES.IMAGE_HEIGHT,
-              objectFit: 'cover',
-              width: '100%'
+          <img 
+            alt={nft.name} 
+            src={nft.image} 
+            style={{ width: '100%', height: 200, objectFit: 'cover' }}
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder-nft.png';
             }}
-            preview={false}
           />
-          {/* Hiển thị rarity badge */}
-          {nft.rarity && nft.rarity.isVerified && (
-            <Tag
-              color={getRarityTierInfo(nft.rarity.rarityTier).color}
-              style={{
-                position: 'absolute',
-                top: '8px',
-                right: '8px',
-                margin: 0,
-                borderRadius: '12px',
-                padding: '2px 8px',
-                fontSize: '11px',
+          
+          {/* Rarity badge */}
+          {(rarity || rarityAttr) && (
+            <Tag 
+              color={rarity?.color || '#1890ff'} 
+              style={{ 
+                position: 'absolute', 
+                top: 8, 
+                right: 8,
+                fontSize: 12,
                 fontWeight: 'bold'
               }}
             >
-              <StarOutlined /> {nft.rarity.rarityTier}
+              <StarOutlined /> {rarity?.tier || rarityAttr?.value}
             </Tag>
           )}
         </div>
       }
-      actions={getCardActions().map((action) => action.content)}
+      actions={[
+        <Button 
+          type="text" 
+          icon={<EyeOutlined />} 
+          onClick={() => onView?.(nft)}
+          key="view"
+        >
+          Xem chi tiết
+        </Button>,
+        ...(nft.isListed ? [{
+          key: 'buy',
+          component: (
+            <Button 
+              type="primary" 
+              icon={<ShoppingCartOutlined />} 
+              onClick={() => onBuy?.(nft)}
+              style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+            >
+              Mua {formatPrice(nft.price || '0')}
+            </Button>
+          )
+        }] : [])
+      ].map(action => typeof action === 'object' && 'component' in action ? action.component : action)}
     >
-      <Card.Meta 
-        title={nft.name} 
+      <Meta
+        avatar={<Avatar icon={<UserOutlined />} />}
+        title={nft.name}
         description={
           <div>
-            <div>{nft.description}</div>
-            {/* Hiển thị rarity score */}
-            {nft.rarity && nft.rarity.isVerified && (
-              <div style={{ marginTop: '8px', fontSize: '12px', color: getRarityTierInfo(nft.rarity.rarityTier).color }}>
-                Rarity Score: {nft.rarity.rarityScore}/10000
-              </div>
+            <Text ellipsis style={{ display: 'block', marginBottom: 8 }}>
+              {nft.description}
+            </Text>
+            
+            {/* Rarity info */}
+            {(rarity || rarityAttr) && (
+              <Row gutter={8} style={{ marginBottom: 8 }}>
+                <Col>
+                  <Text style={{ fontSize: 12, color: '#666' }}>
+                    <StarOutlined /> {rarity?.score || 'N/A'}/10000
+                  </Text>
+                </Col>
+              </Row>
+            )}
+            
+            <Text code style={{ fontSize: 11 }}>
+              {formatAddress(nft.owner)}
+            </Text>
+            {nft.isListed && (
+              <>
+                <br />
+                <Text strong style={{ color: '#52c41a' }}>
+                  {formatPrice(nft.price || '0')}
+                </Text>
+              </>
             )}
           </div>
-        } 
+        }
       />
-      {showStatus && customAction}
     </Card>
   );
 };
