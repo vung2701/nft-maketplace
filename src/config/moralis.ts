@@ -29,7 +29,7 @@ export const MORALIS_CONFIG = {
 		apiSecret: import.meta.env.VITE_PINATA_API_SECRET,
 		jwt: import.meta.env.VITE_PINATA_JWT,
 		// Fix: API endpoint vs Gateway endpoint
-		gateway: import.meta.env.VITE_PINATA_URL || 'https://gateway.pinata.cloud/ipfs/'
+		gateway: import.meta.env.VITE_PINATA_URL_MORALIS || 'https://gateway.pinata.cloud/ipfs/'
 			
 	}
 };

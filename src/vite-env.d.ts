@@ -12,6 +12,7 @@ interface ImportMetaEnv {
 	readonly VITE_WALLET_CONNECT_PROJECT_ID?: string,
 	readonly VITE_BE_SEPOLIA_URL?: string,
 	readonly VITE_PINATA_URL?: string,
+	readonly VITE_PINATA_URL_MORALIS?: string,
 	readonly VITE_PINATA_JWT?: string,
 	readonly VITE_PINATA_API_SECRET?: string,
 	readonly VITE_PINATA_API_KEY?: string,
