@@ -5,6 +5,7 @@ import { uploadFileToIPFS, uploadMetadataToIPFS } from '../../services/apiPinata
 import { useNFTContract } from '../../hooks/useNFTContract';
 import { MESSAGES, MINT_STEPS } from '../../constants';
 import { LoadingOverlay } from '../loading/LoadingOverlay';
+import { useNavigate } from 'react-router-dom';
 
 interface MintFormProps {
   onSuccess?: () => void;
@@ -19,6 +20,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
 
   // Custom hook cho tương tác với smart contract
   const { mintNFT, isConnected } = useNFTContract();
+  const navigate = useNavigate();
 
   // Xử lý mint NFT
   const handleFinish = async ({ name, description }: { name: string; description: string }) => {
@@ -55,6 +57,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
       form.resetFields();
       setFile(null);
       onSuccess?.();
+      navigate('/');
     } catch (err: any) {
       message.error(MESSAGES.MINT_FAILED + (err.message || err));
     } finally {
