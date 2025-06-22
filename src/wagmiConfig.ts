@@ -6,7 +6,6 @@ import { Chain, sepolia } from 'wagmi/chains';
 const localhost = {
   id: 31337,
   name: 'Hardhat',
-  network: 'hardhat',
   nativeCurrency: {
     decimals: 18,
     name: 'Ether',
@@ -22,7 +21,7 @@ const sepoliaRpcUrl = import.meta.env.VITE_BE_SEPOLIA_URL || 'https://rpc2.sepol
 
 export const config = getDefaultConfig({
   appName: 'NFT Marketplace',
-  projectId: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID,
+  projectId: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID ?? (() => { throw new Error('VITE_WALLET_CONNECT_PROJECT_ID is not defined'); })(),
   chains: [localhost, sepolia],
   transports: {
     [sepolia.id]: http(sepoliaRpcUrl),

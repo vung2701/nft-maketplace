@@ -12,13 +12,11 @@ import RewardTokenABI from '../abis/RewardToken.json';
 // Import types
 import type {
 	Transaction,
-	PriceData,
 	FeeCalculation,
 	UserActivity,
 	RewardDistribution,
 	UserReward,
 	NFTRarity,
-	RarityStats
 } from '../types';
 
 import { CONTRACT_ADDRESSES, MESSAGES } from '../constants';
@@ -46,6 +44,9 @@ export function useChainlinkContracts() {
 
 	const getAutomatedRewardsContract = useCallback(() => {
 		if (!publicClient) return null;
+
+		console.log('Using Automated Rewards Contract Address:', CONTRACT_ADDRESSES.AUTOMATED_REWARDS);
+		console.log('Using Automated Rewards Contract Address:', CONTRACT_ADDRESSES.AUTOMATED_REWARDS as `0x${string}`);
 		return getContract({
 			address: CONTRACT_ADDRESSES.AUTOMATED_REWARDS as `0x${string}`,
 			abi: AutomatedRewardsABI,
