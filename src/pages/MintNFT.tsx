@@ -13,7 +13,7 @@ export const MintNFT: React.FC = () => {
             🎨 Tạo NFT Mới
           </Title>
           <Paragraph style={{ fontSize: 16, color: '#666' }}>
-            Tạo NFT với độ hiếm được sinh tự động và lưu trên blockchain
+            Tạo và mint NFT của riêng bạn lên blockchain
           </Paragraph>
         </div>
         
@@ -21,7 +21,7 @@ export const MintNFT: React.FC = () => {
         
         <MintForm 
           onSuccess={() => {
-            console.log('NFT đã được mint thành công với rarity tự động!');
+            console.log('NFT đã được mint thành công!');
           }}
         />
       </Space>

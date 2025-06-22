@@ -6,16 +6,6 @@ export interface NFTAttribute {
 	max_value?: number;
 }
 
-// Rarity và Visibility types
-export interface NFTRarity {
-	tier: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Mythical';
-	score: number; // 1-10000
-	percentage: number; // % drop rate
-	color: string;
-}
-
-
-
 export interface NFTMetadata {
 	name: string;
 	description: string;
@@ -25,8 +15,6 @@ export interface NFTMetadata {
 	background_color?: string;
 	attributes: NFTAttribute[];
 	properties?: Record<string, any>;
-	// Thêm rarity
-	rarity?: NFTRarity;
 }
 
 // Moralis NFT Response Types
@@ -185,6 +173,5 @@ export interface NFTItem {
 	price?: string;
 	listingsId?: number;
 	seller: string;
-	// Thêm metadata để support rarity và visibility
 	metadata?: NFTMetadata | string;
 } 

@@ -6,7 +6,6 @@ import { useNFTContract } from '../../hooks/useNFTContract';
 import { MESSAGES, MINT_STEPS } from '../../constants';
 import { LoadingOverlay } from '../loading/LoadingOverlay';
 import { useNavigate } from 'react-router-dom';
-import { generateRandomRarity, generateRandomAttributes } from '../../utils/web3';
 
 interface MintFormProps {
   onSuccess?: () => void;
@@ -41,22 +40,11 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
       const imageURL = await uploadFileToIPFS(file);
       if (!imageURL) throw new Error('Upload ảnh thất bại');
 
-      // Tự động tạo rarity và attributes (im lặng)
-      const rarity = generateRandomRarity();
-      const attributes = generateRandomAttributes(rarity);
-      
-      // Thêm rarity vào attributes
-      attributes.push(
-        { trait_type: 'Rarity', value: rarity.tier },
-        { trait_type: 'Rarity Score', value: rarity.score.toString() }
-      );
-
+      // Tạo metadata đơn giản
       const metadata = {
         name,
         description,
         image: imageURL,
-        attributes,
-        rarity,
         properties: {
           created_at: new Date().toISOString(),
           version: '1.0'
@@ -76,7 +64,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
       // Đợi xác nhận giao dịch
       setCurrentStep(MINT_STEPS.CONFIRMING);
 
-      message.success(`${MESSAGES.MINT_SUCCESS} Độ hiếm: ${rarity.tier} (${rarity.score}/10000)`);
+      message.success(MESSAGES.MINT_SUCCESS);
       form.resetFields();
       setFile(null);
       onSuccess?.();
@@ -95,7 +83,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
       {loading && <LoadingOverlay tip={currentStep} />}
       
       <Form form={form} layout="vertical" onFinish={handleFinish}>
-        <Card title="📝 Thông tin NFT">
+        <Card title="📝 Tạo NFT">
           <Form.Item label="Tên NFT" name="name" rules={[{ required: true, message: 'Nhập tên NFT' }]}>
             <Input disabled={loading} placeholder="Tên NFT của bạn..." />
           </Form.Item>
@@ -130,7 +118,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
             block
             style={{ marginTop: 16 }}
           >
-            🎲 Mint NFT (Độ hiếm tự động)
+            Mint NFT
           </Button>
         </Card>
       </Form>

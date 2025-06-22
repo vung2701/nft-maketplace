@@ -1,3 +1,5 @@
+import type { NFTAttribute } from '../types/nft';
+
 // Các hàm tiện ích cho web3
 export const convertIpfsToHttp = (ipfsUrl: string): string => {
 	if (!ipfsUrl) return '';
@@ -50,45 +52,115 @@ export const RARITY_CONFIG = {
 	Mythical: { score: [9951, 10000], percentage: 0.5, color: '#f5222d', multiplier: 5 }
 } as const;
 
+// Utility functions cho Web3
+export const formatAddress = (address: string): string => {
+	if (!address) return '';
+	return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
 
+export const formatTokenId = (tokenId: string | number): string => {
+	return `#${tokenId}`;
+};
 
-// Generate random rarity với ES6 arrow function
-export const generateRandomRarity = () => {
-	const randomScore = Math.floor(Math.random() * 10000) + 1;
+export const formatPrice = (price: string | number, currency = 'ETH'): string => {
+	const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+	return `${numPrice.toFixed(4)} ${currency}`;
+};
 
-	const rarityTier = Object.entries(RARITY_CONFIG).find(([_, config]) =>
-		randomScore >= config.score[0] && randomScore <= config.score[1]
-	)?.[0] || 'Common';
+export const truncateText = (text: string, maxLength: number): string => {
+	if (text.length <= maxLength) return text;
+	return `${text.slice(0, maxLength)}...`;
+};
 
-	const config = RARITY_CONFIG[rarityTier as keyof typeof RARITY_CONFIG];
+export const isValidAddress = (address: string): boolean => {
+	return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
 
-	return {
-		tier: rarityTier as keyof typeof RARITY_CONFIG,
-		score: randomScore,
-		percentage: config.percentage,
-		color: config.color
+export const copyToClipboard = async (text: string): Promise<boolean> => {
+	try {
+		await navigator.clipboard.writeText(text);
+		return true;
+	} catch (err) {
+		console.error('Copy to clipboard failed:', err);
+		return false;
+	}
+};
+
+export const getExplorerUrl = (address: string, chainId = 1): string => {
+	const explorers = {
+		1: 'https://etherscan.io',
+		5: 'https://goerli.etherscan.io',
+		137: 'https://polygonscan.com',
+		80001: 'https://mumbai.polygonscan.com'
+	};
+
+	const baseUrl = explorers[chainId as keyof typeof explorers] || explorers[1];
+	return `${baseUrl}/address/${address}`;
+};
+
+export const getTransactionUrl = (txHash: string, chainId = 1): string => {
+	const explorers = {
+		1: 'https://etherscan.io',
+		5: 'https://goerli.etherscan.io',
+		137: 'https://polygonscan.com',
+		80001: 'https://mumbai.polygonscan.com'
+	};
+
+	const baseUrl = explorers[chainId as keyof typeof explorers] || explorers[1];
+	return `${baseUrl}/tx/${txHash}`;
+};
+
+export const parseIPFSUrl = (url: string): string => {
+	if (!url) return '';
+
+	if (url.startsWith('ipfs://')) {
+		return `https://ipfs.io/ipfs/${url.slice(7)}`;
+	}
+
+	if (url.includes('ipfs/')) {
+		const hash = url.split('ipfs/')[1];
+		return `https://ipfs.io/ipfs/${hash}`;
+	}
+
+	return url;
+};
+
+export const validateImageUrl = (url: string): boolean => {
+	const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+	const lowerUrl = url.toLowerCase();
+
+	return imageExtensions.some(ext => lowerUrl.includes(ext)) ||
+		lowerUrl.includes('ipfs') ||
+		lowerUrl.includes('data:image');
+};
+
+export const sleep = (ms: number): Promise<void> => {
+	return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+export const debounce = <T extends (...args: any[]) => any>(
+	func: T,
+	wait: number
+): ((...args: Parameters<T>) => void) => {
+	let timeout: NodeJS.Timeout;
+
+	return (...args: Parameters<T>) => {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => func(...args), wait);
 	};
 };
 
+export const throttle = <T extends (...args: any[]) => any>(
+	func: T,
+	limit: number
+): ((...args: Parameters<T>) => void) => {
+	let inThrottle: boolean;
 
-
-// Generate random attributes dựa trên rarity
-export const generateRandomAttributes = (rarity: { tier: keyof typeof RARITY_CONFIG; score: number; percentage: number; color: string }) => {
-	const baseAttributes = [
-		{ trait_type: 'Background', values: ['Blue', 'Green', 'Red', 'Purple', 'Gold', 'Rainbow'] },
-		{ trait_type: 'Eyes', values: ['Normal', 'Sleepy', 'Wink', 'Laser', 'Diamond', 'Fire'] },
-		{ trait_type: 'Mouth', values: ['Smile', 'Frown', 'Surprise', 'Tongue', 'Grin', 'Silent'] },
-		{ trait_type: 'Accessory', values: ['None', 'Hat', 'Glasses', 'Crown', 'Mask', 'Halo'] }
-	];
-
-	// Rare NFTs có nhiều attributes hơn
-	const numAttributes = rarity.tier === 'Mythical' ? 4 :
-		rarity.tier === 'Legendary' ? 3 :
-			rarity.tier === 'Epic' ? 3 :
-				rarity.tier === 'Rare' ? 2 : 2;
-
-	return baseAttributes.slice(0, numAttributes).map(attr => ({
-		trait_type: attr.trait_type,
-		value: attr.values[Math.floor(Math.random() * attr.values.length)]
-	}));
+	return (...args: Parameters<T>) => {
+		if (!inThrottle) {
+			func(...args);
+			inThrottle = true;
+			setTimeout(() => inThrottle = false, limit);
+		}
+	};
 }; 
