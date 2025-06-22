@@ -3,6 +3,8 @@ import { Card, Button, Input, Space, Tag } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
 import { NFTItem } from '../types';
 import { DEFAULT_VALUES, COLORS, RARITY_TIERS } from '../constants';
+import { IPFSImage } from './moralisComponents/IPFSImage';
+import { fixPinataUrl } from '../utils/web3';
 
 interface NFTCardProps {
   nft: NFTItem;
@@ -72,14 +74,15 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, showStatus, customAction,
     <Card
       cover={
         <div style={{ position: 'relative' }}>
-          <img
+          <IPFSImage
             alt={nft.name}
-            src={nft.image}
+            src={fixPinataUrl(nft.image)}
             style={{
               height: DEFAULT_VALUES.IMAGE_HEIGHT,
               objectFit: 'cover',
               width: '100%'
             }}
+            preview={false}
           />
           {/* Hiển thị rarity badge */}
           {nft.rarity && nft.rarity.isVerified && (
