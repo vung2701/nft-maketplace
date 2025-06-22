@@ -8,7 +8,6 @@ import {
   DashboardOutlined,
   DollarOutlined,
   GiftOutlined,
-  BarChartOutlined,
   WalletOutlined
 } from '@ant-design/icons';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -20,7 +19,6 @@ import { MintNFT } from './pages/MintNFT';
 import Dashboard from './pages/Dashboard';
 import { Pricing } from './pages/Pricing';
 import Rewards from './pages/Rewards';
-import TheGraphDemo from './pages/TheGraphDemo';
 
 // Providers
 import { MoralisProvider } from './providers/MoralisProvider';
@@ -68,11 +66,6 @@ const AppContent: React.FC = () => {
       key: '/rewards',
       icon: <GiftOutlined />,
       label: 'Rewards'
-    },
-    {
-      key: '/graph',
-      icon: <BarChartOutlined />,
-      label: 'The Graph'
     }
   ];
 
@@ -142,7 +135,6 @@ const AppContent: React.FC = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/rewards" element={<Rewards />} />
-            <Route path="/graph" element={<TheGraphDemo />} />
           </Routes>
         </Content>
       </Layout>
