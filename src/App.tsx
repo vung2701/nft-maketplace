@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Menu, Button, Typography } from 'antd';
-import { 
-  HomeOutlined, 
-  ShopOutlined, 
-  PlusOutlined, 
+import {
+  HomeOutlined,
+  ShopOutlined,
+  PlusOutlined,
   DashboardOutlined,
   DollarOutlined,
   GiftOutlined,
@@ -36,42 +36,44 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  useEffect(() => {}, [location.pathname]);
+
   const menuItems = [
     {
       key: '/',
       icon: <HomeOutlined />,
-      label: 'Trang chủ',
+      label: 'Trang chủ'
     },
     {
       key: '/marketplace',
       icon: <ShopOutlined />,
-      label: 'Marketplace',
+      label: 'Marketplace'
     },
     {
       key: '/mint',
       icon: <PlusOutlined />,
-      label: 'Tạo NFT',
+      label: 'Tạo NFT'
     },
     {
       key: '/dashboard',
       icon: <DashboardOutlined />,
-      label: 'Dashboard',
+      label: 'Dashboard'
     },
     {
       key: '/pricing',
       icon: <DollarOutlined />,
-      label: 'Giá cả',
+      label: 'Giá cả'
     },
     {
       key: '/rewards',
       icon: <GiftOutlined />,
-      label: 'Rewards',
+      label: 'Rewards'
     },
     {
       key: '/graph',
       icon: <BarChartOutlined />,
-      label: 'The Graph',
-    },
+      label: 'The Graph'
+    }
   ];
 
   const handleMenuClick = ({ key }: { key: string }) => {
@@ -80,23 +82,19 @@ const AppContent: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider 
-        collapsible 
-        collapsed={collapsed} 
-        onCollapse={setCollapsed}
-        theme="light"
-        width={250}
-      >
-        <div style={{ 
-          padding: '16px', 
-          textAlign: 'center',
-          borderBottom: '1px solid #f0f0f0'
-        }}>
+      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="light" width={250}>
+        <div
+          style={{
+            padding: '16px',
+            textAlign: 'center',
+            borderBottom: '1px solid #f0f0f0'
+          }}
+        >
           <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
             {collapsed ? '🎨' : '🎨 NFT Market'}
           </Title>
         </div>
-        
+
         <Menu
           theme="light"
           selectedKeys={[location.pathname]}
@@ -106,33 +104,37 @@ const AppContent: React.FC = () => {
           style={{ borderRight: 0 }}
         />
       </Sider>
-      
+
       <Layout>
-        <Header style={{ 
-          background: '#fff', 
-          padding: '0 24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderBottom: '1px solid #f0f0f0'
-        }}>
+        <Header
+          style={{
+            background: '#fff',
+            padding: '0 24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderBottom: '1px solid #f0f0f0'
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <WalletOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
             <Title level={4} style={{ margin: 0 }}>
               NFT Marketplace
             </Title>
           </div>
-          
+
           <ConnectButton />
         </Header>
-        
-        <Content style={{ 
-          margin: '24px',
-          padding: '24px',
-          background: '#fff',
-          borderRadius: '8px',
-          minHeight: 'calc(100vh - 112px)'
-        }}>
+
+        <Content
+          style={{
+            margin: '24px',
+            padding: '24px',
+            background: '#fff',
+            borderRadius: '8px',
+            minHeight: 'calc(100vh - 112px)'
+          }}
+        >
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/marketplace" element={<MarketPlace />} />

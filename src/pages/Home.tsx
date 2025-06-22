@@ -1,9 +1,9 @@
 import React from 'react';
 import { Typography, Button, Row, Col, Card, Space, Statistic, Badge } from 'antd';
-import { 
-  ShopOutlined, 
-  PlusOutlined, 
-  TrophyOutlined, 
+import {
+  ShopOutlined,
+  PlusOutlined,
+  TrophyOutlined,
   RocketOutlined,
   StarOutlined,
   FireOutlined,
@@ -51,42 +51,44 @@ export const Home: React.FC = () => {
     }
   ];
 
-  const stats = [
-    {
-      title: 'Total NFTs',
-      value: 1234,
-      prefix: <FireOutlined style={{ color: '#f5222d' }} />
-    },
-    {
-      title: 'Active Users',
-      value: 567,
-      prefix: <UserOutlined style={{ color: '#1890ff' }} />
-    },
-    {
-      title: 'Total Volume',
-      value: 89.5,
-      suffix: 'ETH',
-      prefix: <DollarOutlined style={{ color: '#52c41a' }} />
-    },
-    {
-      title: 'Average Price',
-      value: 0.15,
-      suffix: 'ETH',
-      prefix: <StarOutlined style={{ color: '#faad14' }} />
-    }
-  ];
+  // const stats = [
+  //   {
+  //     title: 'Total NFTs',
+  //     value: 1234,
+  //     prefix: <FireOutlined style={{ color: '#f5222d' }} />
+  //   },
+  //   {
+  //     title: 'Active Users',
+  //     value: 567,
+  //     prefix: <UserOutlined style={{ color: '#1890ff' }} />
+  //   },
+  //   {
+  //     title: 'Total Volume',
+  //     value: 89.5,
+  //     suffix: 'ETH',
+  //     prefix: <DollarOutlined style={{ color: '#52c41a' }} />
+  //   },
+  //   {
+  //     title: 'Average Price',
+  //     value: 0.15,
+  //     suffix: 'ETH',
+  //     prefix: <StarOutlined style={{ color: '#faad14' }} />
+  //   }
+  // ];
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
       {/* Hero Section */}
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '60px 0',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        borderRadius: 16,
-        color: 'white',
-        marginBottom: 48
-      }}>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '60px 0',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: 16,
+          color: 'white',
+          marginBottom: 48
+        }}
+      >
         <Space direction="vertical" size="large">
           <div>
             <Title level={1} style={{ color: 'white', fontSize: 48, margin: 0 }}>
@@ -106,21 +108,21 @@ export const Home: React.FC = () => {
             </div>
           ) : (
             <Space size="large">
-              <Button 
-                type="primary" 
-                size="large" 
+              <Button
+                type="primary"
+                size="large"
                 icon={<ShopOutlined />}
                 onClick={() => navigate('/marketplace')}
                 style={{ height: 48, fontSize: 16 }}
               >
                 Vào Marketplace
               </Button>
-              <Button 
-                size="large" 
+              <Button
+                size="large"
                 icon={<PlusOutlined />}
                 onClick={() => navigate('/mint')}
-                style={{ 
-                  height: 48, 
+                style={{
+                  height: 48,
                   fontSize: 16,
                   background: 'rgba(255,255,255,0.2)',
                   border: '1px solid rgba(255,255,255,0.3)',
@@ -135,7 +137,7 @@ export const Home: React.FC = () => {
       </div>
 
       {/* Stats Section */}
-      <Row gutter={[24, 24]} style={{ marginBottom: 48 }}>
+      {/* <Row gutter={[24, 24]} style={{ marginBottom: 48 }}>
         {stats.map((stat, index) => (
           <Col xs={24} sm={12} md={6} key={index}>
             <Card>
@@ -149,37 +151,27 @@ export const Home: React.FC = () => {
             </Card>
           </Col>
         ))}
-      </Row>
+      </Row> */}
 
       {/* Features Section */}
       <div style={{ marginBottom: 48 }}>
         <Title level={2} style={{ textAlign: 'center', marginBottom: 32 }}>
           ✨ Tính năng nổi bật
         </Title>
-        
+
         <Row gutter={[24, 24]}>
           {features.map((feature, index) => (
             <Col xs={24} sm={12} lg={6} key={index}>
-              <Card
-                hoverable
-                style={{ height: '100%', textAlign: 'center' }}
-                bodyStyle={{ padding: 24 }}
-              >
+              <Card hoverable style={{ height: '100%', textAlign: 'center' }} bodyStyle={{ padding: 24 }}>
                 <Space direction="vertical" size="large" style={{ width: '100%' }}>
                   <div>{feature.icon}</div>
                   <div>
                     <Title level={4} style={{ margin: 0 }}>
                       {feature.title}
                     </Title>
-                    <Paragraph style={{ color: '#666', margin: '8px 0' }}>
-                      {feature.description}
-                    </Paragraph>
+                    <Paragraph style={{ color: '#666', margin: '8px 0' }}>{feature.description}</Paragraph>
                   </div>
-                  <Button 
-                    type="primary" 
-                    onClick={feature.action}
-                    style={{ width: '100%' }}
-                  >
+                  <Button type="primary" onClick={feature.action} style={{ width: '100%' }}>
                     {feature.buttonText}
                   </Button>
                 </Space>
@@ -192,9 +184,7 @@ export const Home: React.FC = () => {
       {/* Technology Section */}
       <Card style={{ marginBottom: 48 }}>
         <div style={{ textAlign: 'center' }}>
-          <Title level={3}>
-            🔗 Công nghệ tiên tiến
-          </Title>
+          <Title level={3}>🔗 Công nghệ tiên tiến</Title>
           <Row gutter={[24, 24]} style={{ marginTop: 32 }}>
             <Col xs={24} md={8}>
               <Badge.Ribbon text="Oracle" color="blue">
@@ -209,7 +199,7 @@ export const Home: React.FC = () => {
                 </Card>
               </Badge.Ribbon>
             </Col>
-            
+
             <Col xs={24} md={8}>
               <Badge.Ribbon text="Storage" color="green">
                 <Card size="small">
@@ -223,7 +213,7 @@ export const Home: React.FC = () => {
                 </Card>
               </Badge.Ribbon>
             </Col>
-            
+
             <Col xs={24} md={8}>
               <Badge.Ribbon text="Analytics" color="orange">
                 <Card size="small">
@@ -242,8 +232,8 @@ export const Home: React.FC = () => {
       </Card>
 
       {/* Call to Action */}
-      <Card 
-        style={{ 
+      <Card
+        style={{
           background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
           border: 'none',
           textAlign: 'center'
@@ -258,12 +248,12 @@ export const Home: React.FC = () => {
           </Paragraph>
           {isConnected ? (
             <Space>
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 size="large"
                 onClick={() => navigate('/marketplace')}
-                style={{ 
-                  background: 'white', 
+                style={{
+                  background: 'white',
                   color: '#f5576c',
                   border: 'none',
                   fontWeight: 'bold'
@@ -271,10 +261,10 @@ export const Home: React.FC = () => {
               >
                 Khám phá Marketplace
               </Button>
-              <Button 
+              <Button
                 size="large"
                 onClick={() => navigate('/mint')}
-                style={{ 
+                style={{
                   background: 'rgba(255,255,255,0.2)',
                   color: 'white',
                   border: '1px solid rgba(255,255,255,0.3)'
