@@ -39,17 +39,14 @@ let initializationPromise: Promise<void> | null = null;
 let isInitialized = false;
 
 export const initializeMoralis = async (): Promise<void> => {
-	// If already initialized, return immediately
 	if (isInitialized) {
 		return;
 	}
 
-	// If initialization is in progress, return the same promise
 	if (initializationPromise) {
 		return initializationPromise;
 	}
 
-	// Start initialization
 	initializationPromise = (async () => {
 		try {
 			if (!MORALIS_CONFIG.apiKey) {

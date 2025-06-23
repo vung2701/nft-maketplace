@@ -104,7 +104,7 @@ export const Home: React.FC = () => {
               <Paragraph style={{ color: 'rgba(255,255,255,0.8)', marginBottom: 24 }}>
                 Kết nối ví để bắt đầu hành trình NFT của bạn
               </Paragraph>
-              <ConnectButton />
+              {/* <ConnectButton /> */}
             </div>
           ) : (
             <Space size="large">
@@ -274,7 +274,8 @@ export const Home: React.FC = () => {
               </Button>
             </Space>
           ) : (
-            <ConnectButton />
+            <></>
+            // <ConnectButton />
           )}
         </Space>
       </Card>
