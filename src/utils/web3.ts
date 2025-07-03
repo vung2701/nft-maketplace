@@ -1,4 +1,3 @@
-import type { NFTAttribute } from '../types/nft';
 
 // Các hàm tiện ích cho web3
 export const convertIpfsToHttp = (ipfsUrl: string): string => {

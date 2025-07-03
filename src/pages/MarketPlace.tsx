@@ -3,7 +3,6 @@ import { Row, Col, message, Divider, Select, Card, Button, Tag, Alert, Spin } fr
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { NFTItem } from '../types';
-import { NFTCard } from '../components/NFTCard';
 import { useNFTContract } from '../hooks/useNFTContract';
 import { MESSAGES, COLORS } from '../constants';
 import { parseWei } from '../utils/web3';
@@ -97,7 +96,6 @@ const Marketplace: React.FC = () => {
     try {
       setLoading(true);
 
-      // Lấy thông tin listing từ contract
       const listings = await getListingsFromContract();
 
       for (const nft of moralisData.nfts) {

@@ -81,7 +81,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
   return (
     <>
       {loading && <LoadingOverlay tip={currentStep} />}
-      
+
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Card title="📝 Tạo NFT">
           <Form.Item label="Tên NFT" name="name" rules={[{ required: true, message: 'Nhập tên NFT' }]}>
@@ -109,10 +109,10 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
             </Upload>
           </Form.Item>
 
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            loading={loading} 
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
             disabled={!isConnected || loading}
             size="large"
             block

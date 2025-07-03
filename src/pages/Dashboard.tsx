@@ -4,7 +4,6 @@ import { DatabaseOutlined, BarChartOutlined, TrophyOutlined, HistoryOutlined } f
 import MarketplaceStats from '../components/graphComponents/MarketplaceStats';
 import UserRanking from '../components/graphComponents/UserRanking';
 import TransactionHistory from '../components/graphComponents/TransactionHistory';
-import GraphStatus from '../components/graphComponents/GraphStatus';
 
 const { Title, Paragraph, Text } = Typography;
 
