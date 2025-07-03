@@ -68,7 +68,7 @@ export const MintForm: React.FC<MintFormProps> = ({ onSuccess }) => {
       form.resetFields();
       setFile(null);
       onSuccess?.();
-      navigate('/');
+      navigate('/marketplace');
     } catch (err: any) {
       message.error(MESSAGES.MINT_FAILED + (err.message || err));
     } finally {
